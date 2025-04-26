@@ -1,1 +1,1 @@
-# Computa-o-Gr-fica
+# Computação gráfica - UERJ - 2025.1
