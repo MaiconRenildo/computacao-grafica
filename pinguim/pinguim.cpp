@@ -372,14 +372,13 @@ void drawFish() {
     }
 }
 
-
 void drawPicture(){
     drawBackground();
-    drawGrass();
     drawWater();
+    drawFish();
+    drawGrass();
     drawPenguinChick();
     drawPenguinDad();
-    drawFish();
 }
 
 void display() {
