@@ -3,16 +3,16 @@
 #include <iostream>
 #include <cstdlib>  // para rand() e srand()
 #include <ctime>    // para time()
+#include <vector>
+#include <tuple>
 
-const char* title = "Jogo do pinguim";
+const char* title = "Penguim Game";
 int windowWidth = 800;
 int windowHeight = 600;
 bool whitBackground = true;
 const double PI = 3.14;
 const float orthoValue = 8.0;
 const float squareWidth = 1.0;
-int frameNumber = 0;
-float carPosition = 0.0;
 
 // declare generic code
 void reset_modelview_matrix();
@@ -128,7 +128,7 @@ void drawBackground(){
     glPushMatrix();
         // glTranslated(0, 2.8, 0.0);
         glColor3f(1, 0.8, 0.95);
-        glScaled(10, 8, 1.0); 
+        glScaled(16, 16, 1.0); 
         drawSquare();
     glPopMatrix();
 }
@@ -144,7 +144,7 @@ void drawBaseRetangle(){
     glPopMatrix();
 }
 
-void drawFish() {
+void drawOneFish() {
     glColor3f(0.0f, 0.0f, 0.0f);
     // corpo
     glPushMatrix();
@@ -164,190 +164,255 @@ void drawFish() {
 }
 
 void drawPenguinChick(){
-    // corpo
     glPushMatrix();
+        glTranslated(-7.5, -3.9, 0.0);
+        glScaled(0.7, 0.7, 1.0); 
+        
+        // corpo
+        glPushMatrix();
         glColor3f(0.8f, 0.8f, 0.2f);
         glTranslated(0.2, 0.42, 0.0);
         drawPolygonEllipse(0.42, 0.41);
-    glPopMatrix();
+        glPopMatrix();
 
-    // pata esquerda
-    glPushMatrix();
+        // pata esquerda
+        glPushMatrix();
         glColor3f(0.0f, 0.0f, 0.0f);
         glRotated(-30, 0.0, 0.0, 1.0);
         glScaled(3, 3, 1.0); 
         drawTriangle();
-    glPopMatrix();
+        glPopMatrix();
 
-    // pata direita
-    glPushMatrix();
+        // pata direita
+        glPushMatrix();
         glColor3f(0.0f, 0.0f, 0.0f);    
         glTranslated(0.3, 0.0, 0.0);
         glRotated(-30, 0.0, 0.0, 1.0);
         glScaled(3, 3, 1.0); 
         drawTriangle();
-    glPopMatrix();
+        glPopMatrix();
 
-    // asa
-    glPushMatrix();
+        // asa
+        glPushMatrix();
         glColor3f(1.0f, 1.0f, 1.0f);
         glTranslated(0.4, 0.42, 0.0);
         drawPolygonEllipse(0.10, 0.25);
-    glPopMatrix();
+        glPopMatrix();
 
-    // bico
-    glPushMatrix();
+        // bico
+        glPushMatrix();
         glColor3f(0.55f, 0.27f, 0.07f);
         // glTranslated(0.0, -0.6, 0.0);
         glTranslated(0.55, 1.05, 0.0);
         glRotated(-100, 0.0, 0.0, 1.0);
         glScaled(3, 3, 1.0); 
         drawTriangle();
-    glPopMatrix();
+        glPopMatrix();
 
-    // cabeça
-    glPushMatrix();
+        // cabeça
+        glPushMatrix();
         glColor3f(0.0f, 1.0f, 0.0f);
         glTranslated(0.25, 1.1, 0.0);
         glScaled(1, 1.2, 1.0); 
         drawPolygonCircle(0.25);
-    glPopMatrix();
+        glPopMatrix();
 
-    // olho
-    glPushMatrix();
+        // olho
+        glPushMatrix();
         glColor3f(1.0f, 1.0f, 1.0f);
         glTranslated(0.4, 1.15, 0.0);
         glScaled(1, 1.2, 1.0); 
         drawPolygonCircle(0.08);
+        glPopMatrix();
+
     glPopMatrix();
 }
 
 void drawPenguinDad(){
-    // pata esquerda
     glPushMatrix();
+        glTranslated(-1.5, -3.4, 0.0);
+        glScaled(0.7, 0.7, 1.0); 
+
+        // pata esquerda
+        glPushMatrix();
         glColor3f(0.55f, 0.27f, 0.07f);
         glTranslated(0.0, -0.6, 0.0);
         glRotated(-10, 0.0, 0.0, 1.0);
         glScaled(3, 6, 1.0); 
         drawTriangle();
-    glPopMatrix();
+        glPopMatrix();
 
-    // pata direita
-    glPushMatrix();
+        // pata direita
+        glPushMatrix();
         glColor3f(0.55f, 0.27f, 0.07f);
         glTranslated(0.3, -0.6, 0.0);
         glRotated(-10, 0.0, 0.0, 1.0);
         glScaled(3, 6, 1.0); 
         drawTriangle();
-    glPopMatrix();
+        glPopMatrix();
 
-    // corpo
-    glPushMatrix();
+        // corpo
+        glPushMatrix();
         glColor3f(0.0f, 0.0f, 0.f);
         glTranslated(0.2, 0.42, 0.0);
         drawPolygonEllipse(0.40, 0.90);
-    glPopMatrix();
+        glPopMatrix();
 
-    // asa
-    glPushMatrix();
+        // asa
+        glPushMatrix();
         glColor3f(1.0f, 1.0f, 1.0f);
         glTranslated(0.4, 0.42, 0.0);
         drawPolygonEllipse(0.1, 0.65);
-    glPopMatrix();
+        glPopMatrix();
 
-    // bico
-    glPushMatrix();
+        // bico
+        glPushMatrix();
         glColor3f(0.55f, 0.27f, 0.07f);
         // glTranslated(0.0, -0.6, 0.0);
         glTranslated(0.6, 1.55, 0.0);
         glRotated(-100, 0.0, 0.0, 1.0);
         glScaled(3, 6, 1.0); 
         drawTriangle();
-    glPopMatrix();
+        glPopMatrix();
 
-    // cabeça
-    glPushMatrix();
+        // cabeça
+        glPushMatrix();
         glColor3f(0.0f, 1.0f, 0.0f);
         glTranslated(0.25, 1.6, 0.0);
         glScaled(1, 1.2, 1.0); 
         drawPolygonCircle(0.35);
-    glPopMatrix();
+        glPopMatrix();
 
-    // olho
-    glPushMatrix();
+        // olho
+        glPushMatrix();
         glColor3f(1.0f, 1.0f, 1.0f);
         glTranslated(0.4, 1.65, 0.0);
         glScaled(1, 1.2, 1.0); 
         drawPolygonCircle(0.12);
+        glPopMatrix();
     glPopMatrix();
 }
 
-void drawPicture(){
-    drawBackground();
-    // grama
-    glPushMatrix();
-        glColor3f(0.0, 0.8, 0.0);
-        glTranslated(-2.5, 0.0, 0.0);
-        glScaled(0.995, 1.0, 1.0); 
-        drawBaseRetangle();
-    glPopMatrix();
-
-    // água
+void drawWater(){
     glPushMatrix();
         glColor3f(0.4f, 0.6f, 1.0f);
-        glTranslated(2.5, 0.0, 0.0);
-        glScaled(0.995, 1.0, 1.0); 
+        glTranslated(4, 0.0, 0.0);
+        glScaled(1.589, 2, 1.0); 
         drawBaseRetangle();
     glPopMatrix();
+}
 
-    // desenha filhote no lado esquerdo da tela
+void drawGrass(){
     glPushMatrix();
-        glTranslated(-4.5, -1.9, 0.0);
-        glScaled(0.7, 0.7, 1.0); 
-        drawPenguinChick();
+        glColor3f(0.0, 0.8, 0.0);
+        glTranslated(-4, 0.0, 0.0);
+        glScaled(1.589, 2, 1.0); 
+        drawBaseRetangle();
+    glPopMatrix();
+}
+
+float getRandomFloat(float min, float max) {
+    if (min > max) {
+        std::swap(min, max);
+    }
+    float range = max - min;
+    return min + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX) / range);
+}
+
+
+// fish variables
+float moveSpeed = 0.005f;
+using Coordinate = std::tuple<float, float>;
+std::vector<Coordinate> FishCoordinate = { // y max é -4.2 e y min é -7.8
+    {1.0f, -7.5f},
+    { 2.8f, -7.2f},
+    { 4.0f,  -4.5f},
+    { 3.0f,  -5.0f}
+};
+std::tuple<float, float> PositionOne = FishCoordinate[0];
+std::tuple<float, float> PositionTwo = FishCoordinate[1];
+std::tuple<float, float> PositionThree = FishCoordinate[2];
+std::tuple<float, float> PositionFour = FishCoordinate[3];
+float xOne = std::get<0>(PositionOne);
+float yOne = std::get<1>(PositionOne);
+float xTwo = std::get<0>(PositionTwo);
+float yTwo = std::get<1>(PositionTwo);
+float xThree = std::get<0>(PositionThree);
+float yThree = std::get<1>(PositionThree);
+float xFour = std::get<0>(PositionFour);
+float yFour = std::get<1>(PositionFour);
+
+void drawFish(){
+    float leftLimit = 0.0;
+    float rightLimit = 8.5;
+    float adjusted = 0.2;
+    float upLimit = -4.2;
+    float downLimit = -7.8;
+    
+    // to right
+    glPushMatrix();
+        glPushMatrix();
+            xOne = xOne + moveSpeed;            
+            if(xOne>(rightLimit)){
+                xOne = 0;
+                yOne = getRandomFloat(downLimit, upLimit);
+            }
+            glTranslated(xOne, yOne, 0.0);
+            drawOneFish();
+        glPopMatrix();
+
+        glPushMatrix();
+            xTwo = xTwo + moveSpeed;            
+            if(xTwo>(rightLimit)){
+                xTwo = 0;
+                yTwo = getRandomFloat(downLimit, upLimit);
+            }
+            glTranslated(xTwo, yTwo, 0.0);
+            drawOneFish();
+        glPopMatrix();
     glPopMatrix();
 
-    // desenha o pai ao lado
+    // to left
     glPushMatrix();
-        glTranslated(-1.5, -1.4, 0.0);
-        glScaled(0.7, 0.7, 1.0); 
-        drawPenguinDad();
-    glPopMatrix();
+        glPushMatrix();
+            xThree = xThree - moveSpeed;            
+            if(xThree<(leftLimit)){
+                xThree = rightLimit-0.1;
+                yThree = getRandomFloat(downLimit, upLimit);
+            }
+            glTranslated(xThree, yThree, 0.0);
+            glRotated(-180, 0.0, 0.0, 1.0);
+            drawOneFish();
+        glPopMatrix();
 
-    //peixes
-    glPushMatrix();
-        glTranslated(1.0, -3.5, 0.0);
-        drawFish();
+        glPushMatrix();
+            xFour = xFour - moveSpeed;            
+            if(xFour<(leftLimit)){
+                xFour = rightLimit-0.1;
+                yFour = getRandomFloat(downLimit, upLimit);
+            }
+            glTranslated(xFour, yFour, 0.0);
+            glRotated(-180, 0.0, 0.0, 1.0);
+            glScaled(0.8, 0.8, 1.0); 
+            drawOneFish();
+        glPopMatrix();
     glPopMatrix();
+}
 
-    glPushMatrix();
-        glTranslated(2.8, -3.6, 0.0);
-        drawFish();
-    glPopMatrix();
 
-    glPushMatrix();
-        glTranslated(4, -3.0, 0.0);
-        glRotated(-180, 0.0, 0.0, 1.0);
-        drawFish();
-    glPopMatrix();
-
-    glPushMatrix();
-        glTranslated(3, -2.5, 0.0);
-        glRotated(-180, 0.0, 0.0, 1.0);
-        glScaled(0.8, 0.8, 1.0); 
-        drawFish();
-    glPopMatrix();
+void drawPicture(){
+    drawBackground();
+    drawGrass();
+    drawWater();
+    drawPenguinChick();
+    drawPenguinDad();
+    drawFish();
 }
 
 void display() {
     glClear(GL_COLOR_BUFFER_BIT);
     reset_modelview_matrix();
-    // preenche a tela inteira
-    glPushMatrix();
-        // glScaled(1.6, 2, 1.0); // só essa linha basta
-        // glTranslated(0, -2.8, 0.0); // ignorar
-        drawPicture();
-    glPopMatrix();
+    drawPicture();
     cartesian_plane();
     glFlush();
 }
@@ -372,7 +437,6 @@ void init(){
     glOrtho(-orthoValue, orthoValue, -orthoValue, orthoValue, -orthoValue, orthoValue);
 }
 void doFrame(int v){
-    frameNumber+=1;
     glutPostRedisplay();
     glutTimerFunc(20, doFrame,0); // 50fps
 }
