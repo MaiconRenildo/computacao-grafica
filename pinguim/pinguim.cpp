@@ -319,84 +319,57 @@ float getRandomFloat(float min, float max) {
     return min + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX) / range);
 }
 
-
-// fish variables
-float moveSpeed = 0.005f;
-using Coordinate = std::tuple<float, float>;
-std::vector<Coordinate> FishCoordinate = { // y max é -4.2 e y min é -7.8
-    {1.0f, -7.5f},
-    { 2.8f, -7.2f},
-    { 4.0f,  -4.5f},
-    { 3.0f,  -5.0f}
+struct Fish {
+    float x;
+    float y;
+    float speed;
+    bool movingRight;
+    float scale;
 };
-std::tuple<float, float> PositionOne = FishCoordinate[0];
-std::tuple<float, float> PositionTwo = FishCoordinate[1];
-std::tuple<float, float> PositionThree = FishCoordinate[2];
-std::tuple<float, float> PositionFour = FishCoordinate[3];
-float xOne = std::get<0>(PositionOne);
-float yOne = std::get<1>(PositionOne);
-float xTwo = std::get<0>(PositionTwo);
-float yTwo = std::get<1>(PositionTwo);
-float xThree = std::get<0>(PositionThree);
-float yThree = std::get<1>(PositionThree);
-float xFour = std::get<0>(PositionFour);
-float yFour = std::get<1>(PositionFour);
 
-void drawFish(){
-    float leftLimit = 0.0;
-    float rightLimit = 8.5;
-    float adjusted = 0.2;
-    float upLimit = -4.2;
-    float downLimit = -7.8;
-    
-    // to right
-    glPushMatrix();
-        glPushMatrix();
-            xOne = xOne + moveSpeed;            
-            if(xOne>(rightLimit)){
-                xOne = 0;
-                yOne = getRandomFloat(downLimit, upLimit);
-            }
-            glTranslated(xOne, yOne, 0.0);
-            drawOneFish();
-        glPopMatrix();
+std::vector<Fish> initializeFishes() {
+    std::vector<Fish> fishes = {
+        {1.0f, -7.5f, 0.005f, true, 1.0f},
+        {2.8f, -7.2f, 0.005f, true, 1.0f},
+        {4.0f, -4.5f, 0.005f, false, 1.0f},
+        {3.0f, -5.0f, 0.005f, false, 0.8f}
+    };
+    return fishes;
+}
 
-        glPushMatrix();
-            xTwo = xTwo + moveSpeed;            
-            if(xTwo>(rightLimit)){
-                xTwo = 0;
-                yTwo = getRandomFloat(downLimit, upLimit);
-            }
-            glTranslated(xTwo, yTwo, 0.0);
-            drawOneFish();
-        glPopMatrix();
-    glPopMatrix();
+std::vector<Fish> allFishes = initializeFishes();
+void drawFish() {
+    float leftLimit = 0.2f;
+    float rightLimit = 8.5f;
+    float upLimit = -4.2f;
+    float downLimit = -7.8f;
+    float adjustedLeft = leftLimit - 0.2f;
+    float respawnRight = rightLimit - 0.1f;
+    float respawnLeft = 0.0f;
 
-    // to left
-    glPushMatrix();
+    for (auto& fish : allFishes) {
         glPushMatrix();
-            xThree = xThree - moveSpeed;            
-            if(xThree<(leftLimit)){
-                xThree = rightLimit-0.1;
-                yThree = getRandomFloat(downLimit, upLimit);
+            if (fish.movingRight) {
+                fish.x += fish.speed;
+                if (fish.x > rightLimit) {
+                    fish.x = respawnLeft;
+                    fish.y = getRandomFloat(downLimit, upLimit);
+                }
+                glTranslatef(fish.x, fish.y, 0.0f);
+                drawOneFish();
+            } else {
+                fish.x -= fish.speed;
+                if (fish.x < adjustedLeft) {
+                    fish.x = respawnRight;
+                    fish.y = getRandomFloat(downLimit, upLimit);
+                }
+                glTranslatef(fish.x, fish.y, 0.0f);
+                glRotatef(-180.0f, 0.0f, 0.0f, 1.0f);
+                glScalef(fish.scale, fish.scale, 1.0f);
+                drawOneFish();
             }
-            glTranslated(xThree, yThree, 0.0);
-            glRotated(-180, 0.0, 0.0, 1.0);
-            drawOneFish();
         glPopMatrix();
-
-        glPushMatrix();
-            xFour = xFour - moveSpeed;            
-            if(xFour<(leftLimit)){
-                xFour = rightLimit-0.1;
-                yFour = getRandomFloat(downLimit, upLimit);
-            }
-            glTranslated(xFour, yFour, 0.0);
-            glRotated(-180, 0.0, 0.0, 1.0);
-            glScaled(0.8, 0.8, 1.0); 
-            drawOneFish();
-        glPopMatrix();
-    glPopMatrix();
+    }
 }
 
 
