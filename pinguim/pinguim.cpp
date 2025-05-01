@@ -6,23 +6,24 @@
 #include <vector>
 #include <tuple>
 
-const char* title = "Penguim Game";
-int windowWidth = 800;
-int windowHeight = 600;
-bool whitBackground = true;
-const double PI = 3.14;
-const float orthoValue = 8.0;
-const float squareWidth = 1.0;
-float dadXPosition = -1.5;
-float dadYPosition = -3.4;
-bool moveDadToLeft = false;
-bool isGoingToLeft = false;
-const float moveStep = 0.5;
-
 // declare generic code
 void reset_modelview_matrix();
 void reset_projection_matrix();
 void init();
+
+// declare constants
+const char* title = "Penguim Game";
+const int windowWidth = 800;
+const int windowHeight = 600;
+const float orthoValue = 8.0;
+const double PI = 3.14;
+const float moveStep = 0.5;
+
+// declare global variables
+float dadXPosition = -1.5;
+float dadYPosition = -3.4;
+bool moveDadToLeft = false;
+bool isDadGoingToLeft = false;
 
 ///////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////// BASE CODE
@@ -75,6 +76,7 @@ void cartesian_plane(){
 
 //////////////////////// POLYGONS
 void drawSquare(){ 
+    float squareWidth = 1.0;
     glBegin(GL_POLYGON);
         glVertex3f(squareWidth/2, squareWidth/2, 0.0);   
         glVertex3f(-squareWidth/2, squareWidth/2, 0.0);  
@@ -236,8 +238,8 @@ void drawPenguinChick(){
 void drawPenguinDad(bool hasFish=true){
     glPushMatrix();
         // ajusta o movimento no momento da troca de direção
-        if (isGoingToLeft != moveDadToLeft) {
-            isGoingToLeft = moveDadToLeft;
+        if (isDadGoingToLeft != moveDadToLeft) {
+            isDadGoingToLeft = moveDadToLeft;
             dadXPosition += (moveDadToLeft ? moveStep : -moveStep);
         }
         std::cout << dadXPosition << std::endl;
@@ -245,7 +247,7 @@ void drawPenguinDad(bool hasFish=true){
         glPushMatrix();
             // efetua a troca de direção
             float adjustXPosition = 0.15; //as costas do pinguim passam a casar com o ponto 0 do eixo x
-            if(isGoingToLeft){
+            if(isDadGoingToLeft){
                 glTranslated(-adjustXPosition, 0.0, 0.0);
                 glScaled(-1.0, 1.0, 1.0); 
             }else{
