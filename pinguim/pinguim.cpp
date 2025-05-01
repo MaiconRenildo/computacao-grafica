@@ -18,6 +18,7 @@ const int windowHeight = 600;
 const float orthoValue = 8.0;
 const double PI = 3.14;
 const float moveStep = 0.5;
+const float dadXPositionLimit = 7.5;
 
 // declare global variables
 float dadXPosition = -1.5;
@@ -252,6 +253,11 @@ void drawPenguinDad(bool hasFish=true){
                 glScaled(-1.0, 1.0, 1.0); 
             }else{
                 glTranslated(adjustXPosition, 0.0, 0.0);
+            }
+
+            // limita o deslocamento no eixo x entre as extremidades da tela
+            if(dadXPosition < (-dadXPositionLimit) || dadXPosition > (dadXPositionLimit)){
+                dadXPosition = (dadXPosition > dadXPositionLimit) ? dadXPositionLimit : -dadXPositionLimit;
             }
 
             // desenha o peixe na boca
