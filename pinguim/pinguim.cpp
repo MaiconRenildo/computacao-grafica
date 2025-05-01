@@ -13,6 +13,11 @@ bool whitBackground = true;
 const double PI = 3.14;
 const float orthoValue = 8.0;
 const float squareWidth = 1.0;
+float dadXPosition = -1.5;
+float dadYPosition = -3.4;
+bool moveDadToLeft = false;
+bool isGoingToLeft = false;
+const float moveStep = 0.5;
 
 // declare generic code
 void reset_modelview_matrix();
@@ -69,7 +74,7 @@ void cartesian_plane(){
 ////////////////////////
 
 //////////////////////// POLYGONS
-void drawSquare() { 
+void drawSquare(){ 
     glBegin(GL_POLYGON);
         glVertex3f(squareWidth/2, squareWidth/2, 0.0);   
         glVertex3f(-squareWidth/2, squareWidth/2, 0.0);  
@@ -228,69 +233,99 @@ void drawPenguinChick(){
     glPopMatrix();
 }
 
-void drawPenguinDad(){
+void drawPenguinDad(bool hasFish=true){
     glPushMatrix();
-        glTranslated(-1.5, -3.4, 0.0);
-        glScaled(0.7, 0.7, 1.0); 
-
-        // pata esquerda
+        // ajusta o movimento no momento da troca de direção
+        if (isGoingToLeft != moveDadToLeft) {
+            isGoingToLeft = moveDadToLeft;
+            dadXPosition += (moveDadToLeft ? moveStep : -moveStep);
+        }
+        std::cout << dadXPosition << std::endl;
+        glTranslated(dadXPosition, dadYPosition, 0.0); // movimenta o pinguim
         glPushMatrix();
-        glColor3f(0.55f, 0.27f, 0.07f);
-        glTranslated(0.0, -0.6, 0.0);
-        glRotated(-10, 0.0, 0.0, 1.0);
-        glScaled(3, 6, 1.0); 
-        drawTriangle();
-        glPopMatrix();
+            // efetua a troca de direção
+            float adjustXPosition = 0.15; //as costas do pinguim passam a casar com o ponto 0 do eixo x
+            if(isGoingToLeft){
+                glTranslated(-adjustXPosition, 0.0, 0.0);
+                glScaled(-1.0, 1.0, 1.0); 
+            }else{
+                glTranslated(adjustXPosition, 0.0, 0.0);
+            }
 
-        // pata direita
-        glPushMatrix();
-        glColor3f(0.55f, 0.27f, 0.07f);
-        glTranslated(0.3, -0.6, 0.0);
-        glRotated(-10, 0.0, 0.0, 1.0);
-        glScaled(3, 6, 1.0); 
-        drawTriangle();
-        glPopMatrix();
+            // desenha o peixe na boca
+            if(hasFish){
+                glPushMatrix();
+                    glTranslated(0.5, 0.9, 0.0);
+                    glRotated(-90, 0.0, 0.0, 1.0);
+                    drawOneFish();
+                glPopMatrix();
+            }
 
-        // corpo
-        glPushMatrix();
-        glColor3f(0.0f, 0.0f, 0.f);
-        glTranslated(0.2, 0.42, 0.0);
-        drawPolygonEllipse(0.40, 0.90);
-        glPopMatrix();
+            glPushMatrix();
+                
+                glScaled(0.7, 0.7, 1.0); 
 
-        // asa
-        glPushMatrix();
-        glColor3f(1.0f, 1.0f, 1.0f);
-        glTranslated(0.4, 0.42, 0.0);
-        drawPolygonEllipse(0.1, 0.65);
-        glPopMatrix();
+                // pata esquerda
+                glPushMatrix();
+                    glColor3f(0.55f, 0.27f, 0.07f);
+                    glTranslated(0.0, -0.6, 0.0);
+                    glRotated(-10, 0.0, 0.0, 1.0);
+                    glScaled(3, 6, 1.0); 
+                    drawTriangle();
+                glPopMatrix();
 
-        // bico
-        glPushMatrix();
-        glColor3f(0.55f, 0.27f, 0.07f);
-        // glTranslated(0.0, -0.6, 0.0);
-        glTranslated(0.6, 1.55, 0.0);
-        glRotated(-100, 0.0, 0.0, 1.0);
-        glScaled(3, 6, 1.0); 
-        drawTriangle();
-        glPopMatrix();
+                // pata direita
+                glPushMatrix();
+                    glColor3f(0.55f, 0.27f, 0.07f);
+                    glTranslated(0.3, -0.6, 0.0);
+                    glRotated(-10, 0.0, 0.0, 1.0);
+                    glScaled(3, 6, 1.0); 
+                    drawTriangle();
+                glPopMatrix();
 
-        // cabeça
-        glPushMatrix();
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glTranslated(0.25, 1.6, 0.0);
-        glScaled(1, 1.2, 1.0); 
-        drawPolygonCircle(0.35);
-        glPopMatrix();
+                // corpo
+                glPushMatrix();
+                    glColor3f(0.0f, 0.0f, 0.f);
+                    glTranslated(0.2, 0.42, 0.0);
+                    drawPolygonEllipse(0.40, 0.90);
+                glPopMatrix();
 
-        // olho
-        glPushMatrix();
-        glColor3f(1.0f, 1.0f, 1.0f);
-        glTranslated(0.4, 1.65, 0.0);
-        glScaled(1, 1.2, 1.0); 
-        drawPolygonCircle(0.12);
+                // asa
+                glPushMatrix();
+                    glColor3f(1.0f, 1.0f, 1.0f);
+                    glTranslated(0.4, 0.42, 0.0);
+                    drawPolygonEllipse(0.1, 0.65);
+                glPopMatrix();
+
+                // bico
+                glPushMatrix();
+                    glColor3f(0.55f, 0.27f, 0.07f);
+                    // glTranslated(0.0, -0.6, 0.0);
+                    glTranslated(0.6, 1.55, 0.0);
+                    glRotated(-100, 0.0, 0.0, 1.0);
+                    glScaled(3, 6, 1.0); 
+                    drawTriangle();
+                glPopMatrix();
+
+                // cabeça
+                glPushMatrix();
+                    glColor3f(0.0f, 1.0f, 0.0f);
+                    glTranslated(0.25, 1.6, 0.0);
+                    glScaled(1, 1.2, 1.0); 
+                    drawPolygonCircle(0.35);
+                glPopMatrix();
+
+                // olho
+                glPushMatrix();
+                    glColor3f(1.0f, 1.0f, 1.0f);
+                    glTranslated(0.4, 1.65, 0.0);
+                    glScaled(1, 1.2, 1.0); 
+                    drawPolygonCircle(0.12);
+                glPopMatrix();
+            glPopMatrix();
         glPopMatrix();
     glPopMatrix();
+    
 }
 
 void drawWater(){
@@ -391,6 +426,19 @@ void display() {
 ///////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////
 
+void specialKeys(int key, int x, int y) {
+    switch (key) {
+        case GLUT_KEY_RIGHT:
+            dadXPosition += moveStep;
+            moveDadToLeft = false;
+            break;
+        case GLUT_KEY_LEFT:
+            dadXPosition -= moveStep;
+            moveDadToLeft = true;
+            break;
+    }
+    display();
+}
 
 /////////////////////////////////////////////////////////////////// GENERIC CODE
 void reset_modelview_matrix(){
@@ -421,6 +469,7 @@ int main(int argc, char** argv){
     init();
     glutDisplayFunc(display);
     glutTimerFunc(20, doFrame,0); // 50fps
+    glutSpecialFunc(specialKeys);
     glutMainLoop();
     return 0;
 }
