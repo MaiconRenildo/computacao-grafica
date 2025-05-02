@@ -18,11 +18,14 @@ const int windowHeight = 600;
 const float orthoValue = 8.0;
 const double PI = 3.14;
 const float moveStep = 0.5;
-const float dadXPositionLimit = 7.5;
+const float windowLeftLimit = -7.5;
+const float windowRightLimit = 6.5;
 
 // declare global variables
 float dadXPosition = -1.5;
 float dadYPosition = -3.4;
+float dadYStandingPosition = -3.4;
+float dadYSwimmingPosition = -4;
 bool moveDadToLeft = false;
 bool isDadGoingToLeft = false;
 
@@ -236,28 +239,65 @@ void drawPenguinChick(){
     glPopMatrix();
 }
 
-void drawPenguinDad(bool hasFish=true){
-    glPushMatrix();
-        // ajusta o movimento no momento da troca de direção
-        if (isDadGoingToLeft != moveDadToLeft) {
-            isDadGoingToLeft = moveDadToLeft;
-            dadXPosition += (moveDadToLeft ? moveStep : -moveStep);
-        }
-        std::cout << dadXPosition << std::endl;
-        glTranslated(dadXPosition, dadYPosition, 0.0); // movimenta o pinguim
-        glPushMatrix();
-            // efetua a troca de direção
-            float adjustXPosition = 0.15; //as costas do pinguim passam a casar com o ponto 0 do eixo x
-            if(isDadGoingToLeft){
-                glTranslated(-adjustXPosition, 0.0, 0.0);
-                glScaled(-1.0, 1.0, 1.0); 
-            }else{
-                glTranslated(adjustXPosition, 0.0, 0.0);
-            }
+void adjustXDirections(){
+    glTranslated(dadXPosition, dadYStandingPosition, 0.0); // movimenta o pinguim
+    float adjustXPosition = 0.15; //as costas do pinguim passam a casar com o ponto 0 do eixo y
+    if(isDadGoingToLeft){
+        glTranslated(-adjustXPosition, 0.0, 0.0);
+        glScaled(-1.0, 1.0, 1.0); 
+    }else{
+        glTranslated(adjustXPosition, 0.0, 0.0);
+    }
+}
 
+void adjustYDirections(){
+    glTranslated(dadXPosition, dadYSwimmingPosition, 0.0); // movimenta o pinguim
+    float adjustXPosition = 0.15; //as costas do pinguim passam a casar com o ponto 0 do eixo x
+    glTranslated(0.0, -adjustXPosition, 0.0);
+    glRotated(-90, 0.0, 0.0, 1.0);
+    if(isDadGoingToLeft){
+        glScaled(1.0, -1.0, 1.0); 
+    }
+}
+
+void drawPenguinDad(bool hasFish=true){
+    // ajusta o movimento no momento da troca de direção
+    bool isChangingDirection = false;
+    if (isDadGoingToLeft != moveDadToLeft) {
+        isChangingDirection =true;
+        isDadGoingToLeft = moveDadToLeft;
+        dadXPosition += (moveDadToLeft ? moveStep : -moveStep);
+    }
+
+    bool isSwimming = false;
+    if(isDadGoingToLeft){
+        if(dadXPosition>1.4){
+            isSwimming=true;
+        }else if(dadXPosition>0){
+            dadXPosition = 0;
+        }
+    }else{
+        if(dadXPosition>=0){
+            isSwimming=true;
+            if(dadXPosition<1){
+                dadXPosition = 1;
+            }
+        }
+    }
+
+    glPushMatrix();
+
+        if(isSwimming){
+            adjustYDirections();
+        }else{
+            adjustXDirections();
+        }        
+
+        glPushMatrix();
+        
             // limita o deslocamento no eixo x entre as extremidades da tela
-            if(dadXPosition < (-dadXPositionLimit) || dadXPosition > (dadXPositionLimit)){
-                dadXPosition = (dadXPosition > dadXPositionLimit) ? dadXPositionLimit : -dadXPositionLimit;
+            if(dadXPosition < (windowLeftLimit) || dadXPosition > (windowRightLimit)){
+                dadXPosition = (dadXPosition > windowRightLimit) ? windowRightLimit : windowLeftLimit;
             }
 
             // desenha o peixe na boca
