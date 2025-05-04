@@ -26,10 +26,14 @@ float dadXPosition = -1.5;
 float dadYStandingPosition = -3.4;
 float dadYSwimmingPosition = -4;
 float dadYPosition = dadYStandingPosition;
+float birdX = 0;
+float birdSpeed = 0.05;
+float direction = 1;
 bool moveDadToLeft = false;
 bool isDadGoingToLeft = false;
 bool moveDadDown = false;
 bool moveDadUp = false;
+
 
 ///////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////// BASE CODE
@@ -155,19 +159,28 @@ void drawWing(){
 }
 
 void drawBird(){
+    birdX += birdSpeed * direction;
 
-    // Asa esquerda
-    glPushMatrix();
-        glTranslated(-2.0, 1.0, 1.0);
-        glScaled(0.5, 0.2, 1.0);
-        drawWing();
-    glPopMatrix();
+    // Inverte a direção se atingir os limites
+    if (birdX > 7.0 || birdX < -5.0) {
+        direction *= -1;
+    }
 
-    // Asa direita
     glPushMatrix();
-        glTranslated(0.0, 1.0, 1.0);
-        glScaled(0.5, 0.2, 1.0);
-        drawWing();
+        glTranslated(birdX,0.0,1.0);
+        // Asa esquerda
+        glPushMatrix();
+            glTranslated(-2.0, 1.0, 1.0);
+            glScaled(0.5, 0.2, 1.0);
+            drawWing();
+        glPopMatrix();
+
+        // Asa direita
+        glPushMatrix();
+            glTranslated(0.0, 1.0, 1.0);
+            glScaled(0.5, 0.2, 1.0);
+            drawWing();
+        glPopMatrix();
     glPopMatrix();
 
 }
