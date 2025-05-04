@@ -141,17 +141,25 @@ void drawBird(){
     glBegin(GL_POLYGON);
         glColor3f(1.0, 0.5, 0.5); // Cor rosa
 
-        glVertex2f(-0.6, 0.0); // Ponta esquerda
-        glVertex2f(-0.4, 0.2);
-        glVertex2f(-0.2, 0.1);
-        glVertex2f(0.0, 0.3);  // Topo centro (curva)
-        glVertex2f(0.2, 0.1);
-        glVertex2f(0.4, 0.2);
-        glVertex2f(0.6, 0.0);  // Ponta direita
-        glVertex2f(0.3, 0.05);
-        glVertex2f(0.0, -0.1); // Parte inferior central
-        glVertex2f(-0.3, 0.05);
+        glVertex2f(-6.0,  0.0);
+        glVertex2f(-5.0,  2.0);
+        glVertex2f(-4.0,  3.3);
+        glVertex2f(-3.0,  3.7);
+        glVertex2f(-2.0,  2.7);
+        glVertex2f(-1.0,  1.2);
+        glVertex2f( 0.0,  0.0);   
+        glVertex2f( 1.0,  1.2);
+        glVertex2f( 2.0,  2.7);
+        glVertex2f( 3.0,  3.7);
+        glVertex2f( 4.0,  3.3);
+        glVertex2f( 5.0,  2.0);
+        glVertex2f( 6.0,  0.0);
+
     glEnd();
+}
+
+void drawRevoada(){
+    drawBird();
 }
 
 void drawBackground(){
@@ -505,6 +513,7 @@ void drawPicture(){
     drawGrass();
     drawPenguinChick();
     drawPenguinDad();
+    drawRevoada();
 }
 
 void display() {
