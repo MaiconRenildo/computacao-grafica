@@ -26,9 +26,6 @@ float dadXPosition = -1.5;
 float dadYStandingPosition = -3.4;
 float dadYSwimmingPosition = -4;
 float dadYPosition = dadYStandingPosition;
-float birdX = 0;
-float birdSpeed = 0.05;
-float direction = 1;
 bool moveDadToLeft = false;
 bool isDadGoingToLeft = false;
 bool moveDadDown = false;
@@ -158,7 +155,38 @@ void drawWing(){
 
 }
 
-void drawBird(){
+void drawBird() {
+    // Variáveis locais
+    static float birdX = 0.0f;   // Posição inicial no eixo X
+    static float birdY = 6.0f;   // Posição inicial no eixo Y
+    static float birdSpeed = 0.05f;
+    static float direction = 1.0f; // Direção inicial
+    static bool isDiving = false;  // Flag para verificar se o pássaro está mergulhando
+    static float startDiveX = 0.0f;
+    static float startDiveY = 0.0f;
+    static float endDiveX = 0.0f;
+    static float endDiveY = 0.0f;
+    static float diveProgress = 0.0f;  // Controla o progresso da descida
+    static float diveDuration = 50.0f; // Quantidade de frames para a descida
+    static float randomHeight = 0.0f;  // Altura sorteada para a descida
+
+    // Função para sortear uma altura aleatória para o fim da descida
+    auto getRandomHeight = []() {
+        return (rand() % 3 + 1) * (rand() % 2 == 0 ? 1 : -1); // Exemplo de altura entre -3 e 3
+    };
+
+    // Função para iniciar a descida
+    if (!isDiving && (birdX > 7.0 || birdX < -5.0)) {
+        // Inicia a descida aleatória a cada vez que o pássaro atravessa a tela
+        startDiveX = birdX;
+        startDiveY = birdY;
+        endDiveX = birdX + (rand() % 3 + 1); // Mover para frente aleatoriamente
+        randomHeight = getRandomHeight();
+        endDiveY = startDiveY + randomHeight;
+        diveProgress = 0.0f;
+        isDiving = true;
+    }
+
     birdX += birdSpeed * direction;
 
     // Inverte a direção se atingir os limites
@@ -166,8 +194,28 @@ void drawBird(){
         direction *= -1;
     }
 
+    // Se o pássaro estiver em descida
+    if (isDiving) {
+        // Atualiza o progresso da descida
+        diveProgress += 1.0f;
+
+        // Calcula a posição y da parábola
+        float t = diveProgress / diveDuration;
+        birdY = startDiveY + (endDiveY - startDiveY) * t - 0.5 * (endDiveY - startDiveY) * (t - 1) * (t - 1);
+
+        // Se a descida terminar, o pássaro volta a voar
+        if (diveProgress >= diveDuration) {
+            isDiving = false;
+        }
+    }
+
+    // Pássaro não excede grama e água
+    if(birdY <= -5.0){
+        birdY = -4.5;
+    }
+
     glPushMatrix();
-        glTranslated(birdX,0.0,1.0);
+        glTranslated(birdX, birdY, 1.0);
         // Asa esquerda
         glPushMatrix();
             glTranslated(-2.0, 1.0, 1.0);
@@ -182,8 +230,8 @@ void drawBird(){
             drawWing();
         glPopMatrix();
     glPopMatrix();
-
 }
+
 
 void drawBackground(){
     glPushMatrix();
