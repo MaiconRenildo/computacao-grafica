@@ -155,67 +155,44 @@ void drawWing(){
 
 }
 
+
 void drawBird() {
-    // Variáveis locais
-    static float birdX = 0.0f;   // Posição inicial no eixo X
-    static float birdY = 6.0f;   // Posição inicial no eixo Y
+    static float birdX = 0.0f;
+    static float birdY = 2.0f;
     static float birdSpeed = 0.05f;
-    static float direction = 1.0f; // Direção inicial
-    static bool isDiving = false;  // Flag para verificar se o pássaro está mergulhando
-    static float startDiveX = 0.0f;
-    static float startDiveY = 0.0f;
-    static float endDiveX = 0.0f;
-    static float endDiveY = 0.0f;
-    static float diveProgress = 0.0f;  // Controla o progresso da descida
-    static float diveDuration = 50.0f; // Quantidade de frames para a descida
-    static float randomHeight = 0.0f;  // Altura sorteada para a descida
+    static float direction = 1.0f;
 
-    // Função para sortear uma altura aleatória para o fim da descida
-    auto getRandomHeight = []() {
-        return (rand() % 3 + 1) * (rand() % 2 == 0 ? 1 : -1); // Exemplo de altura entre -3 e 3
-    };
+    static int parabolicMode = 0;
+    static float parabolaH = 0.0f;  // ponto central da parábola
+    static float parabolaK = 0.0f;  // altura máxima da parábola
+    static float parabolaA = -0.1f; // concavidade fixa
+    static int initialized = 0;
 
-    // Função para iniciar a descida
-    if (!isDiving && (birdX > 7.0 || birdX < -5.0)) {
-        // Inicia a descida aleatória a cada vez que o pássaro atravessa a tela
-        startDiveX = birdX;
-        startDiveY = birdY;
-        endDiveX = birdX + (rand() % 3 + 1); // Mover para frente aleatoriamente
-        randomHeight = getRandomHeight();
-        endDiveY = startDiveY + randomHeight;
-        diveProgress = 0.0f;
-        isDiving = true;
+    if (!initialized) {
+        srand(time(NULL));
+        initialized = 1;
     }
 
+    // Atualiza a posição horizontal
     birdX += birdSpeed * direction;
 
-    // Inverte a direção se atingir os limites
-    if (birdX > 7.0 || birdX < -5.0) {
+    // Se saiu da tela, inverte a direção e decide se deve mergulhar
+    if (birdX > 7.0f || birdX < -5.0f) {
         direction *= -1;
+
+        int randNum = rand() % 100 + 1;
+
     }
 
-    // Se o pássaro estiver em descida
-    if (isDiving) {
-        // Atualiza o progresso da descida
-        diveProgress += 1.0f;
-
-        // Calcula a posição y da parábola
-        float t = diveProgress / diveDuration;
-        birdY = startDiveY + (endDiveY - startDiveY) * t - 0.5 * (endDiveY - startDiveY) * (t - 1) * (t - 1);
-
-        // Se a descida terminar, o pássaro volta a voar
-        if (diveProgress >= diveDuration) {
-            isDiving = false;
-        }
+    // Limita o Y mínimo
+    if (birdY <= -5.0f) {
+        birdY = -4.5f;
     }
 
-    // Pássaro não excede grama e água
-    if(birdY <= -5.0){
-        birdY = -4.5;
-    }
-
+    // Desenha o pássaro
     glPushMatrix();
         glTranslated(birdX, birdY, 1.0);
+
         // Asa esquerda
         glPushMatrix();
             glTranslated(-2.0, 1.0, 1.0);
@@ -231,7 +208,6 @@ void drawBird() {
         glPopMatrix();
     glPopMatrix();
 }
-
 
 void drawBackground(){
     glPushMatrix();
