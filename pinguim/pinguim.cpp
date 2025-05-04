@@ -137,29 +137,39 @@ void drawPolygonEllipse(double radiusX, double radiusY) {
 
 ///////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////// PAINTING
-void drawBird(){
-    glBegin(GL_POLYGON);
-        glColor3f(1.0, 0.5, 0.5); // Cor rosa
 
-        glVertex2f(-6.0,  0.0);
-        glVertex2f(-5.0,  2.0);
-        glVertex2f(-4.0,  3.3);
-        glVertex2f(-3.0,  3.7);
-        glVertex2f(-2.0,  2.7);
-        glVertex2f(-1.0,  1.2);
-        glVertex2f( 0.0,  0.0);   
-        glVertex2f( 1.0,  1.2);
-        glVertex2f( 2.0,  2.7);
-        glVertex2f( 3.0,  3.7);
-        glVertex2f( 4.0,  3.3);
-        glVertex2f( 5.0,  2.0);
-        glVertex2f( 6.0,  0.0);
 
+void drawWing(){
+    float RAIO = 2.0 ; 
+
+    glColor3f(1.0, 0.5, 0.5);
+    glBegin(GL_LINE_STRIP);  
+        for (int i = 0; i <= 180; i++) {  // De 0 a 180 graus para a metade
+            float angulo = i * PI / 180.0;  // Converte o ângulo para radianos
+            float x = RAIO * cos(angulo);   // Coordenada x do ponto no arco
+            float y = RAIO * sin(angulo);   // Coordenada y do ponto no arco
+            glVertex3f(x, y, 1.0);               // Adiciona o ponto no arco
+        }
     glEnd();
+
 }
 
-void drawRevoada(){
-    drawBird();
+void drawBird(){
+
+    // Asa esquerda
+    glPushMatrix();
+        glTranslated(-2.0, 1.0, 1.0);
+        glScaled(0.5, 0.2, 1.0);
+        drawWing();
+    glPopMatrix();
+
+    // Asa direita
+    glPushMatrix();
+        glTranslated(0.0, 1.0, 1.0);
+        glScaled(0.5, 0.2, 1.0);
+        drawWing();
+    glPopMatrix();
+
 }
 
 void drawBackground(){
@@ -513,7 +523,7 @@ void drawPicture(){
     drawGrass();
     drawPenguinChick();
     drawPenguinDad();
-    drawRevoada();
+    drawBird();
 }
 
 void display() {
