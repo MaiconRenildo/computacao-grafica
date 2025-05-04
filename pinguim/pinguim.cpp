@@ -137,6 +137,23 @@ void drawPolygonEllipse(double radiusX, double radiusY) {
 
 ///////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////// PAINTING
+void drawBird(){
+    glBegin(GL_POLYGON);
+        glColor3f(1.0, 0.5, 0.5); // Cor rosa
+
+        glVertex2f(-0.6, 0.0); // Ponta esquerda
+        glVertex2f(-0.4, 0.2);
+        glVertex2f(-0.2, 0.1);
+        glVertex2f(0.0, 0.3);  // Topo centro (curva)
+        glVertex2f(0.2, 0.1);
+        glVertex2f(0.4, 0.2);
+        glVertex2f(0.6, 0.0);  // Ponta direita
+        glVertex2f(0.3, 0.05);
+        glVertex2f(0.0, -0.1); // Parte inferior central
+        glVertex2f(-0.3, 0.05);
+    glEnd();
+}
+
 void drawBackground(){
     glPushMatrix();
         // glTranslated(0, 2.8, 0.0);
