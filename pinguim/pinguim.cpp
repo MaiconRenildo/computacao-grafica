@@ -158,35 +158,66 @@ void drawWing(){
 
 void drawBird() {
     static float birdX = 0.0f;
-    static float birdY = 2.0f;
+    static float birdY = 0.0f;
     static float birdSpeed = 0.05f;
     static float direction = 1.0f;
 
     static int parabolicMode = 0;
-    static float parabolaH = 0.0f;  // ponto central da parábola
-    static float parabolaK = 0.0f;  // altura máxima da parábola
-    static float parabolaA = -0.1f; // concavidade fixa
+    static float parabolaH = 0.0f;
+    static float parabolaK = -4.3f;         // ponto mais baixo da parábola
+    static float parabolaA = 0.0f;
+    static float parabolaStartX = 0.0f;
+    static float initialY = 0.0f;
+
     static int initialized = 0;
+    static int cooldown = 0;  // evita novas parábolas muito rapidamente
 
     if (!initialized) {
         srand(time(NULL));
         initialized = 1;
     }
 
-    // Atualiza a posição horizontal
+    // Movimento horizontal
     birdX += birdSpeed * direction;
 
-    // Se saiu da tela, inverte a direção e decide se deve mergulhar
-    if (birdX > 7.0f || birdX < -5.0f) {
-        direction *= -1;
-
+    // Sorteia movimento parabólico com 70% de chance (com cooldown)
+    if (!parabolicMode && cooldown <= 0) {
         int randNum = rand() % 100 + 1;
+        if (randNum <= 70) {
+            parabolicMode = 1;
+            parabolaStartX = birdX;
+            parabolaH = birdX + 2.0f * direction;  // vértice no meio do mergulho
+            initialY = birdY;
 
+            // Calcula A para que y volte a zero no fim da parábola
+            float dx = parabolaStartX - parabolaH;
+            parabolaA = (initialY - parabolaK) / (dx * dx);
+
+            cooldown = 200;  // espera N frames antes de poder mergulhar de novo
+        }
     }
 
-    // Limita o Y mínimo
-    if (birdY <= -5.0f) {
-        birdY = -4.5f;
+    // Atualiza Y se estiver em modo parábola
+    if (parabolicMode) {
+        float x = birdX;
+        birdY = parabolaA * (x - parabolaH) * (x - parabolaH) + parabolaK;
+
+        // Finaliza parábola depois de 4 unidades (ida + volta)
+        if ((direction > 0 && birdX >= parabolaH + 2.0f) ||
+            (direction < 0 && birdX <= parabolaH - 2.0f)) {
+            parabolicMode = 0;
+            birdY = initialY;
+        }
+    }
+
+    // Inverte direção ao sair da tela
+    if (birdX > 7.0f || birdX < -5.0f) {
+        direction *= -1;
+    }
+
+    // Diminui cooldown
+    if (cooldown > 0) {
+        cooldown--;
     }
 
     // Desenha o pássaro
@@ -208,6 +239,7 @@ void drawBird() {
         glPopMatrix();
     glPopMatrix();
 }
+
 
 void drawBackground(){
     glPushMatrix();
