@@ -31,22 +31,34 @@ bool isDadGoingToLeft = false;
 bool moveDadDown = false;
 bool moveDadUp = false;
 bool colisaoDetectada = false;
+bool hasFish = false;
 int framesDesdeUltimaColisao = 0;
 
 // Estrutura para representar uma bounding box
 struct BoundingBox {
-    float x, y;       // posição do centro
+    float x, y;       
     float largura, altura;
 };
 
 
 // Função para obter a bounding box do pinguim filho
-BoundingBox getPenguinBoundingBox() {
+BoundingBox getPenguinSonBoundingBox() {
     BoundingBox box;
-    box.x = -7.5 + 0.2;  // posição x + offset do corpo
-    box.y = -3.9 + 0.42; // posição y + offset do corpo
+    box.x = -7.5 + 0.2;  
+    box.y = -3.9 + 0.42; 
     box.largura = 0.42 * 2 * 0.7; 
     box.altura = 0.41 * 2 * 0.7;  
+    return box;
+}
+
+// Função para obter a bounding box do pinguim pai
+BoundingBox getPenguinDadBoundingBox() {
+    BoundingBox box;
+
+    box.x = dadXPosition + 0.2f;  
+    box.y = dadYPosition + 0.42f; 
+    box.largura = 0.42f * 2 * 0.7f; 
+    box.altura = 0.41f * 2 * 0.7f;  
     return box;
 }
 
@@ -68,6 +80,9 @@ bool checkCollision(const BoundingBox& a, const BoundingBox& b) {
            fabs(a.y - b.y) < (a.altura/2 + b.altura/2);
 }
 
+float distance(float x1, float y1, float x2, float y2) {
+    return sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1));
+}
 
 ///////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////// BASE CODE
@@ -210,7 +225,7 @@ void drawBird() {
     static int cooldown = 0;  // evita novas parábolas muito rapidamente
 
     // Obter bounding boxes
-    BoundingBox penguinBox = getPenguinBoundingBox();
+    BoundingBox penguinBox = getPenguinSonBoundingBox();
     BoundingBox birdBox = getBirdBoundingBox(birdX, birdY);
 
     if (!initialized) {
@@ -427,13 +442,22 @@ void adjustYDirections(bool isFalling){
     }
 }
 
-void drawPenguinDad(bool hasFish=true){
+void drawPenguinDad(){
     // ajusta o movimento no momento da troca de direção
     bool isChangingDirection = false;
     if (isDadGoingToLeft != moveDadToLeft) {
         isChangingDirection =true;
         isDadGoingToLeft = moveDadToLeft;
         dadXPosition += (moveDadToLeft ? moveStep : -moveStep);
+    }
+    
+    // Verifica colisão com filho
+    BoundingBox pai = getPenguinDadBoundingBox();
+    BoundingBox filho = getPenguinSonBoundingBox();
+    
+    if(hasFish && checkCollision(pai,filho)){
+        std::cout << "Peixe entregue ao pinguim filho!" << std::endl;
+        hasFish = false;
     }
 
     bool isSwimming = false;
@@ -616,6 +640,17 @@ void drawFish() {
     float adjustedLeft = leftLimit - 0.2f;
     float respawnRight = rightLimit - 0.1f;
     float respawnLeft = 0.0f;
+
+    // Verifica colisão entre pinguim pai e peixe
+    for (size_t i = 0; i < allFishes.size(); ++i) {
+        float dist = distance(allFishes[i].x, allFishes[i].y, dadXPosition, dadYPosition);
+        if (!hasFish && dist < 1.0f) { 
+            std::cout << "Colisão entre o pinguim pai e o peixe " << i << "!" << std::endl;
+            hasFish = true;
+            allFishes.erase(allFishes.begin() + i);  // Remove peixe
+            continue;
+        }
+    }
 
     for (auto& fish : allFishes) {
         glPushMatrix();
