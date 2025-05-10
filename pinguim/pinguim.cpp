@@ -30,6 +30,43 @@ bool moveDadToLeft = false;
 bool isDadGoingToLeft = false;
 bool moveDadDown = false;
 bool moveDadUp = false;
+bool colisaoDetectada = false;
+int framesDesdeUltimaColisao = 0;
+
+// Estrutura para representar uma bounding box
+struct BoundingBox {
+    float x, y;       // posição do centro
+    float largura, altura;
+};
+
+
+// Função para obter a bounding box do pinguim filho
+BoundingBox getPenguinBoundingBox() {
+    BoundingBox box;
+    box.x = -7.5 + 0.2;  // posição x + offset do corpo
+    box.y = -3.9 + 0.42; // posição y + offset do corpo
+    box.largura = 0.42 * 2 * 0.7; 
+    box.altura = 0.41 * 2 * 0.7;  
+    return box;
+}
+
+// Função para obter a bounding box do pássaro
+BoundingBox getBirdBoundingBox(float birdX, float birdY) {
+    BoundingBox box;
+    // O pássaro é composto por duas asas, vamos considerar uma box que as contém
+    box.x = birdX - 1.0; 
+    box.y = birdY + 1.0;  
+    box.largura = 2.5;    
+    box.altura = 0.5;     
+    return box;
+}
+
+
+// Função para verificar colisão entre duas bounding boxes
+bool checkCollision(const BoundingBox& a, const BoundingBox& b) {
+    return fabs(a.x - b.x) < (a.largura/2 + b.largura/2) &&
+           fabs(a.y - b.y) < (a.altura/2 + b.altura/2);
+}
 
 
 ///////////////////////////////////////////////////////////////////
@@ -172,6 +209,10 @@ void drawBird() {
     static int initialized = 0;
     static int cooldown = 0;  // evita novas parábolas muito rapidamente
 
+    // Obter bounding boxes
+    BoundingBox penguinBox = getPenguinBoundingBox();
+    BoundingBox birdBox = getBirdBoundingBox(birdX, birdY);
+
     if (!initialized) {
         srand(time(NULL));
         initialized = 1;
@@ -218,6 +259,22 @@ void drawBird() {
     // Diminui cooldown
     if (cooldown > 0) {
         cooldown--;
+    }
+
+    // Verificar colisão
+    if (checkCollision(penguinBox, birdBox)) {
+        if (!colisaoDetectada) {
+            std::cout << "DERROTA - COLISAO DETECTADA ENTRE PINGUIM E PASSARO!" << std::endl;
+            colisaoDetectada = true;
+            framesDesdeUltimaColisao = 0;
+            exit(0);
+            // Você pode adicionar efeitos visuais ou sonoros aqui
+        }
+    } else {
+        framesDesdeUltimaColisao++;
+        if (framesDesdeUltimaColisao > 10) { // Pequeno delay para evitar múltiplas detecções
+            colisaoDetectada = false;
+        }
     }
 
     // Desenha o pássaro
