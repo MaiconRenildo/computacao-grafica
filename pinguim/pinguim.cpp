@@ -5,6 +5,7 @@
 #include <ctime>    // para time()
 #include <vector>
 #include <tuple>
+#include <chrono>
 
 // declare generic code
 void reset_modelview_matrix();
@@ -33,6 +34,13 @@ bool moveDadUp = false;
 bool colisaoDetectada = false;
 bool hasFish = false;
 int framesDesdeUltimaColisao = 0;
+int score = 0;
+
+
+// Variáveis para controle de tempo
+std::chrono::steady_clock::time_point startTime;
+bool gameFinished = false;
+const int GAME_DURATION = 300; // 5 minutos em segundos
 
 // Estrutura para representar uma bounding box
 struct BoundingBox {
@@ -265,10 +273,10 @@ void drawBird() {
     // Movimento horizontal
     birdX += birdSpeed * direction;
 
-    // Sorteia movimento parabólico com 70% de chance (com cooldown)
+    // Sorteia movimento parabólico com 30% de chance (com cooldown)
     if (!parabolicMode && cooldown <= 0) {
         int randNum = rand() % 100 + 1;
-        if (randNum <= 70) {
+        if (randNum <= 30) {
             parabolicMode = 1;
             parabolaStartX = birdX;
             parabolaH = birdX + 2.0f * direction;  // vértice no meio do mergulho
@@ -513,10 +521,10 @@ void drawPenguinDad(){
             carriedFish.movingRight = false;
         }
 
-        // Adiciona à lista
-        allFishes.push_back(carriedFish);
-        std::cout << "Respawn em: " << carriedFish.x << ", " << carriedFish.y << std::endl;
+        allFishes.push_back(carriedFish); // Adiciona à lista
+
         hasFish = false;
+        score += 1;
     }
 
     bool isSwimming = false;
@@ -753,12 +761,33 @@ void init(){
     reset_projection_matrix();
     glOrtho(-orthoValue, orthoValue, -orthoValue, orthoValue, -orthoValue, orthoValue);
 }
+
+
+void checkGameTime() {
+    if (gameFinished) return;
+    
+    auto currentTime = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime).count();
+    
+    if (elapsed >= GAME_DURATION) {
+        gameFinished = true;
+        system("clear"); // Para Linux/Mac
+        std::cout << "============================\n";
+        std::cout << "      VOCÊ GANHOU!\n";
+        std::cout << "   Pontuação final: " << score << "\n";
+        std::cout << "============================\n";
+        exit(0); // Encerra o jogo
+    }
+}
+
 void doFrame(int v){
+    checkGameTime();  // Verifica se o tempo acabou
     glutPostRedisplay();
     glutTimerFunc(20, doFrame,0); // 50fps
 }
 
 int main(int argc, char** argv){
+    startTime = std::chrono::steady_clock::now();  // Inicia o timer
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
     glutInitWindowSize(windowWidth, windowHeight);
