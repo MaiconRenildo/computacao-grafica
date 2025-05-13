@@ -40,6 +40,35 @@ struct BoundingBox {
     float largura, altura;
 };
 
+// Estrutura para representar um peixe
+struct Fish {
+    float x;
+    float y;
+    float speed;
+    bool movingRight;
+    float scale;
+    bool isVisible;
+};
+
+float getRandomFloat(float min, float max) {
+    if (min > max) {
+        std::swap(min, max);
+    }
+    float range = max - min;
+    return min + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX) / range);
+}
+
+std::vector<Fish> initializeFishes() {
+    std::vector<Fish> fishes = {
+        {1.0f, -7.5f, 0.005f, true, 1.0f},
+        {2.8f, -7.2f, 0.005f, true, 1.0f},
+        {4.0f, -4.5f, 0.005f, false, 1.0f},
+        {3.0f, -5.0f, 0.005f, false, 1.0f}
+    };
+    return fishes;
+}
+
+std::vector<Fish> allFishes = initializeFishes();
 
 // Função para obter a bounding box do pinguim filho
 BoundingBox getPenguinSonBoundingBox() {
@@ -443,20 +472,50 @@ void adjustYDirections(bool isFalling){
 }
 
 void drawPenguinDad(){
-    // ajusta o movimento no momento da troca de direção
-    bool isChangingDirection = false;
+
+    bool isChangingDirection = false; // ajusta o movimento no momento da troca de direção
+    Fish carriedFish; // Peixe capturado
+
     if (isDadGoingToLeft != moveDadToLeft) {
         isChangingDirection =true;
         isDadGoingToLeft = moveDadToLeft;
         dadXPosition += (moveDadToLeft ? moveStep : -moveStep);
     }
-    
+
+    // Verifica colisão entre pinguim pai e peixe
+    for (size_t i = 0; i < allFishes.size(); ++i) {
+        float dist = distance(allFishes[i].x, allFishes[i].y, dadXPosition, dadYPosition);
+        if (!hasFish && dist < 1.0f) { 
+            std::cout << "Colisão entre o pinguim pai e o peixe !" << std::endl;
+            hasFish = true;
+            allFishes.erase(allFishes.begin() + i);  // Remove peixe
+            continue;
+        }
+    }
+
     // Verifica colisão com filho
     BoundingBox pai = getPenguinDadBoundingBox();
     BoundingBox filho = getPenguinSonBoundingBox();
-    
+    int direcao;
+
     if(hasFish && checkCollision(pai,filho)){
         std::cout << "Peixe entregue ao pinguim filho!" << std::endl;
+        
+        // Configura novo peixe
+        carriedFish.x = getRandomFloat(0.2f, 7.0f);  // Dentro da água
+        carriedFish.y = getRandomFloat(-7.0f, -4.5f);     // Profundidade da água
+        carriedFish.speed = 0.005f; // Velocidade padrão
+        carriedFish.scale = 1.0f; 
+        direcao = rand() % 2;
+        if(direcao == 1){
+            carriedFish.movingRight = true;
+        }else{
+            carriedFish.movingRight = false;
+        }
+
+        // Adiciona à lista
+        allFishes.push_back(carriedFish);
+        std::cout << "Respawn em: " << carriedFish.x << ", " << carriedFish.y << std::endl;
         hasFish = false;
     }
 
@@ -487,9 +546,6 @@ void drawPenguinDad(){
         }else{
             adjustXDirections();
         }        
-
-        // std::cout << dadYPosition << std::endl;
-        // std::cout << dadXPosition << std::endl;
 
         glPushMatrix();
         
@@ -605,33 +661,6 @@ void drawGrass(){
     glPopMatrix();
 }
 
-float getRandomFloat(float min, float max) {
-    if (min > max) {
-        std::swap(min, max);
-    }
-    float range = max - min;
-    return min + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX) / range);
-}
-
-struct Fish {
-    float x;
-    float y;
-    float speed;
-    bool movingRight;
-    float scale;
-};
-
-std::vector<Fish> initializeFishes() {
-    std::vector<Fish> fishes = {
-        {1.0f, -7.5f, 0.005f, true, 1.0f},
-        {2.8f, -7.2f, 0.005f, true, 1.0f},
-        {4.0f, -4.5f, 0.005f, false, 1.0f},
-        {3.0f, -5.0f, 0.005f, false, 0.8f}
-    };
-    return fishes;
-}
-
-std::vector<Fish> allFishes = initializeFishes();
 void drawFish() {
     float leftLimit = 0.2f;
     float rightLimit = 8.5f;
@@ -640,17 +669,6 @@ void drawFish() {
     float adjustedLeft = leftLimit - 0.2f;
     float respawnRight = rightLimit - 0.1f;
     float respawnLeft = 0.0f;
-
-    // Verifica colisão entre pinguim pai e peixe
-    for (size_t i = 0; i < allFishes.size(); ++i) {
-        float dist = distance(allFishes[i].x, allFishes[i].y, dadXPosition, dadYPosition);
-        if (!hasFish && dist < 1.0f) { 
-            std::cout << "Colisão entre o pinguim pai e o peixe " << i << "!" << std::endl;
-            hasFish = true;
-            allFishes.erase(allFishes.begin() + i);  // Remove peixe
-            continue;
-        }
-    }
 
     for (auto& fish : allFishes) {
         glPushMatrix();
