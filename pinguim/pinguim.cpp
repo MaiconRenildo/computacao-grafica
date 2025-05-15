@@ -33,6 +33,7 @@ bool moveDadDown = false;
 bool moveDadUp = false;
 bool colisaoDetectada = false;
 bool hasFish = false;
+int direcao = 0;
 int framesDesdeUltimaColisao = 0;
 int score = 0;
 
@@ -259,10 +260,10 @@ void drawBird() {
     static float initialY = 0.0f;
 
     static int initialized = 0;
-    static int cooldown = 0;  // evita novas parábolas muito rapidamente
+    static int cooldown = 10;  // evita novas parábolas muito rapidamente
 
     // Obter bounding boxes
-    BoundingBox penguinBox = getPenguinSonBoundingBox();
+    BoundingBox penguinBox = getPenguinDadBoundingBox();
     BoundingBox birdBox = getBirdBoundingBox(birdX, birdY);
 
     if (!initialized) {
@@ -273,10 +274,10 @@ void drawBird() {
     // Movimento horizontal
     birdX += birdSpeed * direction;
 
-    // Sorteia movimento parabólico com 30% de chance (com cooldown)
+    // Sorteia movimento parabólico com 10% de chance (com cooldown)
     if (!parabolicMode && cooldown <= 0) {
         int randNum = rand() % 100 + 1;
-        if (randNum <= 30) {
+        if (randNum <= 10) {
             parabolicMode = 1;
             parabolaStartX = birdX;
             parabolaH = birdX + 2.0f * direction;  // vértice no meio do mergulho
@@ -316,11 +317,9 @@ void drawBird() {
     // Verificar colisão
     if (checkCollision(penguinBox, birdBox)) {
         if (!colisaoDetectada) {
-            std::cout << "DERROTA - COLISAO DETECTADA ENTRE PINGUIM E PASSARO!" << std::endl;
             colisaoDetectada = true;
             framesDesdeUltimaColisao = 0;
             exit(0);
-            // Você pode adicionar efeitos visuais ou sonoros aqui
         }
     } else {
         framesDesdeUltimaColisao++;
@@ -494,7 +493,6 @@ void drawPenguinDad(){
     for (size_t i = 0; i < allFishes.size(); ++i) {
         float dist = distance(allFishes[i].x, allFishes[i].y, dadXPosition, dadYPosition);
         if (!hasFish && dist < 1.0f) { 
-            std::cout << "Colisão entre o pinguim pai e o peixe !" << std::endl;
             hasFish = true;
             allFishes.erase(allFishes.begin() + i);  // Remove peixe
             continue;
@@ -504,23 +502,22 @@ void drawPenguinDad(){
     // Verifica colisão com filho
     BoundingBox pai = getPenguinDadBoundingBox();
     BoundingBox filho = getPenguinSonBoundingBox();
-    int direcao;
 
     if(hasFish && checkCollision(pai,filho)){
-        std::cout << "Peixe entregue ao pinguim filho!" << std::endl;
         
         // Configura novo peixe
         carriedFish.x = getRandomFloat(0.2f, 7.0f);  // Dentro da água
         carriedFish.y = getRandomFloat(-7.0f, -4.5f);     // Profundidade da água
         carriedFish.speed = 0.005f; // Velocidade padrão
         carriedFish.scale = 1.0f; 
-        direcao = rand() % 2;
-        if(direcao == 1){
+        
+        if(direcao % 2 == 0){
             carriedFish.movingRight = true;
         }else{
             carriedFish.movingRight = false;
         }
-
+        direcao++;
+      
         allFishes.push_back(carriedFish); // Adiciona à lista
 
         hasFish = false;
