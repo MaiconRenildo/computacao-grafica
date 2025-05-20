@@ -249,7 +249,7 @@ void drawWing(){
 
 
 void drawBird() {
-    static float birdX = 0.0f;
+    static float birdX = 6.0f;
     static float birdY = 0.0f;
     static float birdSpeed = 0.05f;
     static float direction = 1.0f;
@@ -321,6 +321,12 @@ void drawBird() {
         if (!colisaoDetectada) {
             colisaoDetectada = true;
             framesDesdeUltimaColisao = 0;
+            system("clear");
+            std::cout << "============================\n";
+            std::cout << "    VOCÊ PERDEU!\n";
+            std::cout << "Você foi capturado pelo pássaro.\n";
+            std::cout << "   Pontuação final: " << score << "\n";
+            std::cout << "============================\n";
             exit(0);
         }
     } else {
@@ -787,8 +793,8 @@ void checkGameTime() {
         gameFinished = true;
         system("clear");
         std::cout << "============================\n";
-        std::cout << "    FIM DE JOGO!\n";
-        std::cout << "Você não pontuou por 1 minuto.\n";
+        std::cout << "    VOCÊ PERDEU!\n";
+        std::cout << "Seu filho não foi alimentado por 1 minuto.\n";
         std::cout << "   Pontuação final: " << score << "\n";
         std::cout << "============================\n";
         exit(0);
