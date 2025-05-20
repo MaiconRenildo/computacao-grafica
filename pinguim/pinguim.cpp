@@ -42,6 +42,8 @@ int score = 0;
 std::chrono::steady_clock::time_point startTime;
 bool gameFinished = false;
 const int GAME_DURATION = 300; // 5 minutos em segundos
+std::chrono::steady_clock::time_point lastScoreTime;
+bool scoreChanged = false;
 
 // Estrutura para representar uma bounding box
 struct BoundingBox {
@@ -522,6 +524,7 @@ void drawPenguinDad(){
 
         hasFish = false;
         score += 1;
+        lastScoreTime = std::chrono::steady_clock::now(); // Tempo de saciedade do pinguim filho
     }
 
     bool isSwimming = false;
@@ -760,20 +763,35 @@ void init(){
 }
 
 
+// Função que verifica o tempo do jogo
 void checkGameTime() {
     if (gameFinished) return;
     
     auto currentTime = std::chrono::steady_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime).count();
     
+    // Verifica se o tempo total do jogo acabou
     if (elapsed >= GAME_DURATION) {
         gameFinished = true;
-        system("clear"); // Para Linux/Mac
+        system("clear");
         std::cout << "============================\n";
         std::cout << "      VOCÊ GANHOU!\n";
         std::cout << "   Pontuação final: " << score << "\n";
         std::cout << "============================\n";
-        exit(0); // Encerra o jogo
+        exit(0);
+    }
+    
+    // Verifica se a pontuação não mudou por 1 minuto
+    auto timeSinceLastScore = std::chrono::duration_cast<std::chrono::seconds>(currentTime - lastScoreTime).count();
+    if (timeSinceLastScore >= 60) {
+        gameFinished = true;
+        system("clear");
+        std::cout << "============================\n";
+        std::cout << "    FIM DE JOGO!\n";
+        std::cout << "Você não pontuou por 1 minuto.\n";
+        std::cout << "   Pontuação final: " << score << "\n";
+        std::cout << "============================\n";
+        exit(0);
     }
 }
 
@@ -785,6 +803,7 @@ void doFrame(int v){
 
 int main(int argc, char** argv){
     startTime = std::chrono::steady_clock::now();  // Inicia o timer
+    lastScoreTime = startTime;  // Inicializa com o tempo atual
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
     glutInitWindowSize(windowWidth, windowHeight);
