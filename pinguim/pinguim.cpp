@@ -95,29 +95,33 @@ BoundingBox getPenguinSonBoundingBox() {
 BoundingBox getPenguinDadBoundingBox() {
     BoundingBox box;
 
-    box.x = dadXPosition + 0.2f;  
-    box.y = dadYPosition + 0.42f; 
+    box.x = dadXPosition;  
+    box.y = dadYPosition; 
     box.largura = 0.42f * 2 * 0.7f; 
-    box.altura = 0.41f * 2 * 0.7f;  
+    box.altura = 0.1f * 2 * 0.5f;  
     return box;
 }
 
 // Função para obter a bounding box do pássaro
 BoundingBox getBirdBoundingBox(float birdX, float birdY) {
     BoundingBox box;
-    // O pássaro é composto por duas asas, vamos considerar uma box que as contém
-    box.x = birdX - 1.0; 
-    box.y = birdY + 1.0;  
-    box.largura = 2.5;    
-    box.altura = 0.5;     
+    // Ajustando a bounding box para cobrir o pássaro
+    box.x = birdX - 0.1f; // Centralizado
+    box.y = birdY + 0.1f;  
+    box.largura = 1.5f;    
+    box.altura = 0.4f;     
     return box;
 }
 
-
 // Função para verificar colisão entre duas bounding boxes
 bool checkCollision(const BoundingBox& a, const BoundingBox& b) {
-    return fabs(a.x - b.x) < (a.largura/2 + b.largura/2) &&
-           fabs(a.y - b.y) < (a.altura/2 + b.altura/2);
+    bool collisionX = (a.x + a.largura/2 >= b.x - b.largura/2) &&
+                     (b.x + b.largura/2 >= a.x - a.largura/2);
+    
+    bool collisionY = (a.y + a.altura/2 >= b.y - b.altura/2) &&
+                     (b.y + b.altura/2 >= a.y - a.altura/2);
+    
+    return collisionX && collisionY;
 }
 
 float distance(float x1, float y1, float x2, float y2) {
@@ -317,22 +321,24 @@ void drawBird() {
     }
 
     // Verificar colisão
-    if (checkCollision(penguinBox, birdBox)) {
-        if (!colisaoDetectada) {
-            colisaoDetectada = true;
-            framesDesdeUltimaColisao = 0;
-            system("clear");
-            std::cout << "============================\n";
-            std::cout << "    VOCÊ PERDEU!\n";
-            std::cout << "Você foi capturado pelo pássaro.\n";
-            std::cout << "   Pontuação final: " << score << "\n";
-            std::cout << "============================\n";
-            exit(0);
-        }
-    } else {
-        framesDesdeUltimaColisao++;
-        if (framesDesdeUltimaColisao > 10) { // Pequeno delay para evitar múltiplas detecções
-            colisaoDetectada = false;
+    if(dadYPosition > -4.0f){
+        if (checkCollision(penguinBox, birdBox)) {
+            if (!colisaoDetectada) {
+                colisaoDetectada = true;
+                framesDesdeUltimaColisao = 0;
+                system("clear");
+                std::cout << "============================\n";
+                std::cout << "    VOCÊ PERDEU!\n";
+                std::cout << "Você foi capturado pelo pássaro.\n";
+                std::cout << "   Pontuação final: " << score << "\n";
+                std::cout << "============================\n";
+                exit(0);
+            }
+        } else {
+            framesDesdeUltimaColisao++;
+            if (framesDesdeUltimaColisao > 10) { // Pequeno delay para evitar múltiplas detecções
+                colisaoDetectada = false;
+            }
         }
     }
 
