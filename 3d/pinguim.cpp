@@ -139,19 +139,15 @@ void drawPenguimStomach(){
 }
 
 void drawCone(GLdouble baseRadius, GLdouble topRadius, GLdouble height, GLint slices, GLint stacks) {
-    GLUquadricObj *quadric = gluNewQuadric(); // Cria um novo objeto quádrico
-    gluQuadricNormals(quadric, GLU_SMOOTH); // Habilita normais para sombreamento suave
-
-    // Desenha o cilindro/cone. Para um cone, topRadius é 0.
+    GLUquadricObj *quadric = gluNewQuadric();
+    gluQuadricNormals(quadric, GLU_SMOOTH);
     gluCylinder(quadric, baseRadius, topRadius, height, slices, stacks);
-
-    // Opcional: Desenhar a base do cone (um disco)
     gluDisk(quadric, 0, baseRadius, slices, 1);
-    gluDeleteQuadric(quadric); // Libera o objeto quádrico
+    gluDeleteQuadric(quadric);
 }
 
 // void drawBeak(){
-    // glColor3f(1.0, 0.6, 0.0); // Laranja
+    // glColor3f(1.0, 0.6, 0.0); // laranja
     // glPushMatrix();
     //     glTranslatef(0.0, 1.5, 0.35);
     //     glRotatef(-30.0, 1.0, 0.0, 0.0);
@@ -163,7 +159,7 @@ void drawCone(GLdouble baseRadius, GLdouble topRadius, GLdouble height, GLint sl
 
 
 void drawBeak(){
-    glColor3f(1.0, 0.6, 0.0); // Laranja
+    glColor3f(1.0, 0.6, 0.0); // laranja
     glPushMatrix();
         glTranslatef(0.0, 1.5, 0.30);
         glScalef(0.1, 0.15, 0.15);
@@ -208,13 +204,13 @@ void drawDadEyes(){
 }
 
 void drawPenguimHead(){
-    glColor3f(0.0, 0.0, 0.0); // Preto
+    glColor3f(0.0, 0.0, 0.0);
     glPushMatrix();
         glTranslatef(0.0, -0.6, 0.0);
-        // Cabeça do Pinguim
+        // cabeça
         glPushMatrix();
-            glTranslatef(0.0, 1.5, 0.0); // Posição acima do corpo
-            glScalef(0.7, 0.7, 0.7); // Tamanho da cabeça
+            glTranslatef(0.0, 1.5, 0.0);
+            glScalef(0.7, 0.7, 0.7);
             drawSphere();
         glPopMatrix();
     
@@ -227,14 +223,14 @@ void drawPenguimWings(){
     glColor3f(0.05, 0.05, 0.05); // Preto
     glTranslatef(0, -0.3, 0.0);
     glPushMatrix();
-        // asa esquerda
+        // esquerda
         glPushMatrix();
             glTranslatef(-0.5, 0.5, 0.0);
             glRotatef(-30.0, 0.0, 0.0, 1.0);
             glScalef(0.2, 0.8, 0.5);
             drawSphere();
         glPopMatrix();
-        // asa direita
+        // direita
         glPushMatrix();
             glTranslatef(0.5, 0.5, 0.0);
             glRotatef(30.0, 0.0, 0.0, 1.0);
@@ -245,14 +241,14 @@ void drawPenguimWings(){
 }
 
 void drawPenguimFeet(){
-    glColor3f(1.0, 0.6, 0.0); // Laranja
-    // Pé Esquerdo
+    glColor3f(1.0, 0.6, 0.0); // laranja
+    // esquerdo
     glPushMatrix();
         glTranslatef(-0.2, -0.3, 0.3);
         glScalef(0.35, 0.1, 0.6);
         drawSphere();
     glPopMatrix();
-    // Pé Direito
+    // direito
     glPushMatrix();
         glTranslatef(0.2, -0.3, 0.3);
         glScalef(0.35, 0.1, 0.6);
@@ -262,14 +258,6 @@ void drawPenguimFeet(){
 
 void drawPenguim(){
     glPushMatrix();
-        // **AJUSTE**: Translada o pinguim para que seus pés estejam na origem do plano
-        // O corpo principal tem raio 0.5 e é escalado por 1.3 em Y. A parte inferior
-        // do corpo estaria em -0.5 * 1.3 = -0.65.
-        // Para que o "chão" seja y=0, precisamos transladar o pinguim para cima por ~0.65.
-        // O valor 0.65 (raio da esfera do corpo escalada em Y) + 0.1 (para os pés estarem ligeiramente acima do eixo)
-        // O corpo base está em Y=-0.5*1.3 = -0.65
-        // A esfera tem raio 0.5. A parte inferior do corpo está em Y = -0.5 * 1.3 = -0.65 em relação ao centro da esfera do corpo
-        // Se o centro do corpo estiver em (0, 0.65, 0), então a base do corpo estará em Y = 0
         drawPenguimHead();
         drawPenguimBody();
         drawPenguimStomach();
@@ -294,6 +282,100 @@ void drawPenguimBaby(){
 }
 //////////////////////////////////
 
+void drawFish() {
+    glPushMatrix();
+        glTranslatef(-2.0, 0.40, 0.0);
+
+        // corpo
+        //frente
+        glColor3f(1.0, 0.4, 0.0);
+        glPushMatrix();
+            glScalef(1.5, 0.8, 0.8);
+            drawSphere();
+        glPopMatrix();
+        //trás
+        glPushMatrix();
+            glTranslatef(-0.5, 0.0, 0.0);
+            glScalef(1.0, 0.6, 0.6);
+            drawSphere();
+        glPopMatrix();
+
+        // rabo
+        glColor3f(1.0, 0.3, 0.0);
+        glPushMatrix();
+            glTranslatef(-1.0, 0.0, 0.0);
+            glScalef(0.5, 0.5, 0.1);
+            // primeira metade
+            glPushMatrix();
+                glTranslatef(0.0, 0.25, 0.0);
+                glRotatef(-45.0, 0.0, 0.0, 1.0);
+                drawSphere();
+            glPopMatrix();
+            // resto
+            glPushMatrix();
+                glTranslatef(0.0, -0.25, 0.0);
+                glRotatef(45.0, 0.0, 0.0, 1.0);
+                drawSphere();
+            glPopMatrix();
+        glPopMatrix();
+
+        // nadadeiras dorsais
+        glColor3f(1.0, 0.3, 0.0);
+        glPushMatrix();
+            glTranslatef(0.0, 0.35, 0.0);
+            glScalef(0.2, 0.2, 0.2);
+            glRotatef(-90.0, 0.0, 1.0, 0.0);
+            drawPyramid(1.0, 1.0);
+        glPopMatrix();
+        glPushMatrix();
+            glTranslatef(0.1, 0.35, 0.0);
+            glScalef(0.2, 0.2, 0.2);
+            glRotatef(-90.0, 0.0, 1.0, 0.0);
+            drawPyramid(1.0, 1.0);
+        glPopMatrix();
+
+        // nadadeiras laterais
+        glColor3f(1.0, 0.3, 0.0);
+        // esquerda
+        glPushMatrix();
+            glTranslatef(0.3, 0.0, 0.45);
+            glRotatef(-45.0, 0.0, 1.0, 0.0);
+            glScalef(0.4, 0.1, 0.2);
+            drawSphere();
+        glPopMatrix();
+        // direita
+        glPushMatrix();
+            glTranslatef(0.3, 0.0, -0.45);
+            glRotatef(45.0, 0.0, 1.0, 0.0);
+            glScalef(0.4, 0.1, 0.2);
+            drawSphere();
+        glPopMatrix();
+
+        // olhos
+        glColor3f(0.0, 0.0, 0.0);
+        // esquerdo
+        glPushMatrix();
+            glTranslatef(0.5, 0.1, 0.3);
+            glScalef(0.1, 0.1, 0.1);
+            drawSphere();
+        glPopMatrix();
+        // direito
+        glPushMatrix();
+            glTranslatef(0.5, 0.1, -0.3);
+            glScalef(0.1, 0.1, 0.1);
+            drawSphere();
+        glPopMatrix();
+
+        // boca
+        glColor3f(0.8, 0.2, 0.0);
+        glPushMatrix();
+            glTranslatef(0.75, 0.0, 0.0);
+            glScalef(0.1, 0.1, 0.2);
+            drawSphere();
+        glPopMatrix();
+    glPopMatrix();
+}
+
 // Fun??o callback chamada para fazer o desenho
 void Desenha(void){
 	// Limpa a janela de visualiza??o com a cor
@@ -306,6 +388,7 @@ void Desenha(void){
 	glColor3f(0.0f, 0.0f, 1.0f);
     drawPenguimDad();
     drawPenguimBaby();
+    drawFish();
 	// Desenha o teapot com a cor corrente (wire-frame)
 	// glutWireTeapot(50.0f);
     
