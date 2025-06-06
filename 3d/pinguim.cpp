@@ -44,24 +44,60 @@ void drawAxes() {
     glLineWidth(2.0); // Espessura da linha
     glBegin(GL_LINES);
 
-    // Eixo X (Vermelho)
-    glColor3f(1.0, 0.0, 0.0);
-    glVertex3f(-10.0, 0.0, 0.0);
+    // Eixo X
+    glColor3f(0.8, 0.0, 0.0); // positivo (mais escuro)
+    glVertex3f(0.0, 0.0, 0.0);
     glVertex3f(10.0, 0.0, 0.0);
+    glColor3f(1.0, 0.6, 0.6); // negativo (mais claro)
+    glVertex3f(0.0, 0.0, 0.0);
+    glVertex3f(-10.0, 0.0, 0.0);
 
-    // Eixo Y (Verde)
-    glColor3f(0.0, 1.0, 0.0);
-    glVertex3f(0.0, -10.0, 0.0);
+    // Eixo Y
+    glColor3f(0.0, 0.8, 0.0); // positivo (mais escuro)
+    glVertex3f(0.0, 0.0, 0.0);
     glVertex3f(0.0, 10.0, 0.0);
+    glColor3f(0.6, 1.0, 0.6); // negativo (mais claro)
+    glVertex3f(0.0, 0.0, 0.0);
+    glVertex3f(0.0, -10.0, 0.0);
 
-    // Eixo Z (Azul)
-    glColor3f(0.0, 0.0, 1.0);
-    glVertex3f(0.0, 0.0, -10.0);
+    // Eixo Z
+    glColor3f(0.0, 0.0, 0.8); // positivo (mais escuro)
+    glVertex3f(0.0, 0.0, 0.0);
     glVertex3f(0.0, 0.0, 10.0);
+    glColor3f(0.6, 0.6, 1.0); // negativo (mais claro)
+    glVertex3f(0.0, 0.0, 0.0);
+    glVertex3f(0.0, 0.0, -10.0);
 
     glEnd();
+
+    // Marcadores nos sentidos positivos dos eixos:
+    glPushMatrix();
+        // Marcador para X+
+        glTranslatef(10.0f, 0.0f, 0.0f); // Move para X+
+        glRotatef(90.0f, 0.0f, 1.0f, 0.0f); // Roda o cone para apontar para +X
+        glColor3f(0.8f, 0.0f, 0.0f); // mesma cor do eixo X+
+        glutSolidCone(0.3f, 1.0f, 20, 20);
+    glPopMatrix();
+
+    glPushMatrix();
+        // Marcador para Y+
+        glTranslatef(0.0f, 10.0f, 0.0f); // Move para Y+
+        glRotatef(-90.0f, 1.0f, 0.0f, 0.0f); // Roda o cone para apontar para +Y
+        glColor3f(0.0f, 0.8f, 0.0f); // mesma cor do eixo Y+
+        glutSolidCone(0.3f, 1.0f, 20, 20);
+    glPopMatrix();
+
+    glPushMatrix();
+        // Marcador para Z+
+        glTranslatef(0.0f, 0.0f, 10.0f); // Move para Z+
+        glRotatef(-90.0f, 1.0f, 0.0f, 0.0f); // Roda o cone para apontar para +Z
+        glColor3f(0.0f, 0.0f, 0.8f); // mesma cor do eixo Z+
+        glutSolidCone(0.3f, 1.0f, 20, 20);
+    glPopMatrix();
+
     glLineWidth(1.0); // Volta à espessura padrão
 }
+
 
 void drawSphere(){
     glPushMatrix();
@@ -376,6 +412,15 @@ void drawFish() {
     glPopMatrix();
 }
 
+void drawSheetOfIce(){
+    glColor3f(0.7f, 0.9f, 1.0f);
+    glPushMatrix();
+        glTranslatef(-0.0, -0.5, 0.0);
+        glScalef(20.0, 1, 20.0);
+        glutSolidCube(1.0);
+    glPopMatrix();
+}
+
 // Fun??o callback chamada para fazer o desenho
 void Desenha(void){
 	// Limpa a janela de visualiza??o com a cor
@@ -384,17 +429,10 @@ void Desenha(void){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     DefineIluminacao();
     drawAxes();
-	// Troca cor corrente para azul
-	glColor3f(0.0f, 0.0f, 1.0f);
+    drawSheetOfIce();
     drawPenguimDad();
     drawPenguimBaby();
     drawFish();
-	// Desenha o teapot com a cor corrente (wire-frame)
-	// glutWireTeapot(50.0f);
-    
-    // glutSolidTeapot(50.0f),
-    // Desenha um cubo
-
 	// Execu??o dos comandos de desenho
 	glutSwapBuffers();
 }
@@ -504,8 +542,7 @@ void GerenciaMouse(int button, int state, int x, int y)
 }
 
 // Função callback para gerenciar eventos de teclas normais
-void Teclado(unsigned char key, int x, int y)
-{
+void Teclado(unsigned char key, int x, int y){
     switch (key)
     {
         case '1': r = (r > 0.1f) ? r - 0.1f : 0.0f; break;
