@@ -9,8 +9,7 @@
 #ifndef edu_jmu_cs_Materials_h
 #define edu_jmu_cs_Materials_h
 
-float timer= 0.0;
-
+float timer = 0.0;
 
 struct XYZ
 {
@@ -25,9 +24,6 @@ XYZ inp[NI+1][NJ+1];
 #define RESOLUTIONI 3*NI
 #define RESOLUTIONJ 3*NJ
 XYZ outp[RESOLUTIONI][RESOLUTIONJ];
-
-
-
 
 double BezierBlend(int k,double mu, int n)
 {
@@ -57,8 +53,6 @@ double BezierBlend(int k,double mu, int n)
 
    return(blend);
 }
-
-
 
 void generateControlPoint()
 {
@@ -102,7 +96,6 @@ void Surface()
 
 }
 
-
 int BRASS = 0;
 int BRONZE = 1;
 int CHROME = 2;
@@ -124,9 +117,6 @@ int RED_SURFACE = 17;
 int GREEN_SURFACE = 18;
 int BLUE_SURFACE = 19;
 int material = -1;
-
-
-
 
 float SPECULAR_EXPONENTS[] =
 {
@@ -151,7 +141,6 @@ float SPECULAR_EXPONENTS[] =
 80.0f,      // GREEN_SURFACE (novo)
 80.0f       // BLUE_SURFACE (novo)
 };
-
 
 float MATERIAL_COLORS[][3][4] =
 {
@@ -335,41 +324,6 @@ void DrawBezierSurface() {
     }
 }
 
-
-void DrawTable(){
-    aplicaMaterial(WOOD);
-    glPushMatrix();
-        glScalef(7.0f, 0.1f, 3.0f);
-        glutSolidCube(1.0);
-    glPopMatrix();
-
-    // Pés da mesa
-    glPushMatrix(); 
-        glTranslatef( -3.0f, -1.0f, -1.0f); 
-        glScalef(1.0f, 1.9f, 1.0f);
-        DrawTableLeg();
-    glPopMatrix();
-
-    glPushMatrix(); 
-        glTranslatef( -3.0f, -1.0f, 1.2f); 
-        glScalef(1.0f, 1.9f, 1.0f);
-        DrawTableLeg(); 
-    glPopMatrix();
-
-    glPushMatrix();
-        glTranslatef( 3.0f, -1.0f, -1.0f); 
-        glScalef(1.0f, 1.9f, 1.0f);
-        DrawTableLeg(); 
-    glPopMatrix();
-
-    glPushMatrix(); 
-        glTranslatef( 3.0f, -1.0f, 1.2f); 
-        glScalef(1.0f, 1.9f, 1.0f);
-        DrawTableLeg(); 
-    glPopMatrix(); 
-}
-
-
 void idle() {
     timer += 0.01f;
     generateControlPoint();
@@ -393,22 +347,20 @@ void display() {
         glTranslatef(-0.0f, 0.0f, 6.0);
         aplicaMaterial(RED_SURFACE);
         DrawBezierSurface();
-    glPopMatrix(); // 
+    glPopMatrix();
 
-    
     glPushMatrix();
         glTranslatef(-12.0f, 0.0f, 0.0);
         aplicaMaterial(GREEN_SURFACE);
         
         DrawBezierSurface();
-    glPopMatrix(); // 
+    glPopMatrix();
 
     glPushMatrix();
         glTranslatef(-24.0f, 0.0f, -8.0);
         aplicaMaterial(BLUE_SURFACE);
         DrawBezierSurface();
-    glPopMatrix(); // 
-
+    glPopMatrix();
 
     glutSwapBuffers();
 }
@@ -462,7 +414,7 @@ int main(int argc, char** argv) {
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowPosition(80, 80);
     glutInitWindowSize(800, 600);
-    glutCreateWindow("Mesa 3D");
+    glutCreateWindow("Tarefa 6");
     glutReshapeFunc(reshape);
     glutDisplayFunc(display);
     init();
