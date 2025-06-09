@@ -323,17 +323,15 @@ void DrawTableLeg() {
 
 void DrawBezierSurface() {
     int i, j;
-    glColor3f(0.2f, 0.7f, 0.8f);  // Cor azulada
-
     for (i = 0; i < RESOLUTIONI - 1; i++) {
-        glBegin(GL_TRIANGLE_STRIP);
-        for (j = 0; j < RESOLUTIONJ; j++) {
-            // Ponto na linha i
-            glVertex3f(outp[i][j].x, outp[i][j].y, outp[i][j].z);
-            // Ponto na linha i+1
-            glVertex3f(outp[i + 1][j].x, outp[i + 1][j].y, outp[i + 1][j].z);
+        for (j = 0; j < RESOLUTIONJ - 1; j++) {
+            glBegin(GL_QUADS);
+                glVertex3f(outp[i][j].x,     outp[i][j].y,     outp[i][j].z);
+                glVertex3f(outp[i+1][j].x,   outp[i+1][j].y,   outp[i+1][j].z);
+                glVertex3f(outp[i+1][j+1].x, outp[i+1][j+1].y, outp[i+1][j+1].z);
+                glVertex3f(outp[i][j+1].x,   outp[i][j+1].y,   outp[i][j+1].z);
+            glEnd();
         }
-        glEnd();
     }
 }
 
@@ -386,7 +384,7 @@ void display() {
     glLoadIdentity();
 
     gluLookAt(
-        0.0, 30.0, 0.0,   // posição da câmera
+        0.0, 20.0, 6.0,   // posição da câmera
         0.0, 0.0, 0.0, // olhar para o centro da superfície
         0.0, 0.0, 1.0       // "up" é eixo z
     );
