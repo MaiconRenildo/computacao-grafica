@@ -13,6 +13,14 @@ GLfloat windowHeight = 400;
 GLdouble obsX, obsY, obsZ;
 GLfloat r, g, b;
 GLint especMaterial; 
+float penguimPaiX = 2.0;
+float penguimPaiZ = 0.0;
+
+// Função para animação 
+void doFrame(int v){
+    glutPostRedisplay();
+    glutTimerFunc(20, doFrame, 0);
+}
 
 // Função responsável pela especificação dos parâmetros de iluminação
 void DefineIluminacao (void){
@@ -304,7 +312,7 @@ void drawPenguim(){
 
 void drawPenguimDad(){
     glPushMatrix();
-        glTranslatef(2.0, 0.65, 0.0);
+        glTranslatef(penguimPaiX, 0.65, penguimPaiZ);
         drawPenguim();
     glPopMatrix();
 }
@@ -543,28 +551,25 @@ void GerenciaMouse(int button, int state, int x, int y)
 
 // Função callback para gerenciar eventos de teclas normais
 void Teclado(unsigned char key, int x, int y){
-    switch (key)
-    {
-        case '1': r = (r > 0.1f) ? r - 0.1f : 0.0f; break;
-        case '2': g = (g > 0.1f) ? g - 0.1f : 0.0f; break;
-        case '3': b = (b > 0.1f) ? b - 0.1f : 0.0f; break;
-        case '4': r = (r < 0.9f) ? r + 0.1f : 1.0f; break;
-        case '5': g = (g < 0.9f) ? g + 0.1f : 1.0f; break;
-        case '6': b = (b < 0.9f) ? b + 0.1f : 1.0f; break;
-        case 'p' : case 'P' :
-            if (especMaterial <= 155) especMaterial += 5;
-            break;
-         case 'b' : case 'B' :
-            if (especMaterial >= 5) especMaterial -= 5;
-            break;
-        // case GLUT_KEY_F1: // Aumenta especMaterial
-        //     if (especMaterial <= 155) especMaterial += 5;
-        //     break;
-        // case GLUT_KEY_F2: // Diminui especMaterial
-        //     if (especMaterial >= 5) especMaterial -= 5;
-        //     break;
+    float step = 0.1f;  // Velocidade do movimento
 
-        case 27: exit(0); // ESC para sair
+    switch(key){
+        case 'w':
+        case 'W':
+            penguimPaiZ -= step;  // Frente (em direção ao -Z)
+            break;
+        case 's':
+        case 'S':
+            penguimPaiZ += step;  // Trás (+Z)
+            break;
+        case 'a':
+        case 'A':
+            penguimPaiX -= step;  // Esquerda (-X)
+            break;
+        case 'd':
+        case 'D':
+            penguimPaiX += step;  // Direita (+X)
+            break;
     }
     DefineIluminacao(); // Chame para atualizar a luz
     glutPostRedisplay(); // Solicita redesenho
@@ -631,7 +636,7 @@ int main()
 	glutMouseFunc(GerenciaMouse);
 
     glutKeyboardFunc(Teclado); 
-
+    doFrame(0);
 	Inicializa();
 	glutMainLoop();
 }
