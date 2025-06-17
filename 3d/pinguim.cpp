@@ -530,25 +530,6 @@ void AlteraTamanhoJanela(GLsizei w, GLsizei h)
 }
 
 
-// Callback para gerenciar eventos do mouse
-void GerenciaMouse(int button, int state, int x, int y)
-{
-	if (button == GLUT_LEFT_BUTTON)
-		if (state == GLUT_DOWN) {
-			// Zoom-in
-			if (angle >= 10)
-				angle -= 5;
-		}
-	if (button == GLUT_RIGHT_BUTTON)
-		if (state == GLUT_DOWN) {
-			// Zoom-out
-			if (angle <= 130)
-				angle += 5;
-		}
-	EspecificaParametrosVisualizacao();
-	glutPostRedisplay();
-}
-
 // Função callback para gerenciar eventos de teclas normais
 void Teclado(unsigned char key, int x, int y){
     float step = 0.1f;  // Velocidade do movimento
@@ -575,36 +556,6 @@ void Teclado(unsigned char key, int x, int y){
     glutPostRedisplay(); // Solicita redesenho
 }
 
-
-// Fun??o callback chamada para gerenciar eventos de teclas especiais (F1,PgDn,...)
-void TeclasEspeciais (int tecla, int x, int y)
-{
-	switch (tecla)
-	{
-		case GLUT_KEY_LEFT:	rotY--;
-							break;
-		case GLUT_KEY_RIGHT:rotY++;
-							break;
-		case GLUT_KEY_UP:	rotX++;
-							break;
-		case GLUT_KEY_DOWN:	rotX--;
-							break;
-		case GLUT_KEY_HOME:	obsZ++;
-							break;
-		case GLUT_KEY_END:	obsZ--;
-							break;
-        // case GLUT_KEY_F1: // Aumenta especMaterial
-        //     if (especMaterial <= 155) especMaterial += 5;
-        //     break;
-        // case GLUT_KEY_F2: // Diminui especMaterial
-        //     if (especMaterial >= 5) especMaterial -= 5;
-        //     break;
-	}
-	PosicionaObservador();
-	glutPostRedisplay();
-}
-
-
 // Programa Principal
 int main()
 {
@@ -624,16 +575,13 @@ int main()
 	glutInitWindowSize(windowWidth, windowHeight);
 
 	// Cria a janela passando como argumento o titulo da mesma
-	glutCreateWindow("Desenho de um teapot com ilumina??o");
+	glutCreateWindow("Pinguim");
 
 	// Registra a funcao callback de redesenho da janela de visualizacao
 	glutDisplayFunc(Desenha);
-	// Registra a funcao callback para tratamento das teclas especiais
-	glutSpecialFunc(TeclasEspeciais);
+
 	// Registra a funcao callback para tratamento do redimensionamento da janela
     glutReshapeFunc(AlteraTamanhoJanela);
-	// Registra a funcao callback para tratamento do mouse
-	glutMouseFunc(GerenciaMouse);
 
     glutKeyboardFunc(Teclado); 
     doFrame(0);
