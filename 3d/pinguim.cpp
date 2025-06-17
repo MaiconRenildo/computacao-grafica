@@ -41,7 +41,7 @@ void PosicionaObservador(void) {
     float lookAheadZ = penguimPaiZ + cos(radAngle) * 2.0f;
     
     gluLookAt(camX, camY, camZ,       // Posição da câmera
-              lookAheadX, 0.0, lookAheadZ,  // Ponto de observação
+              penguimPaiX, 0.0, penguimPaiZ,  // Ponto de observação
               0.0, 1.0, 0.0);         // Vetor "up"
 }
 
