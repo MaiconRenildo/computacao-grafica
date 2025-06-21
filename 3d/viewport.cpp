@@ -40,7 +40,7 @@ void display() {
   // de cima para baixo
   // Canto superior esquerdo
   glPushMatrix();
-    gluLookAt(0,5,0, 0,0,0, 0,0,-1);
+    gluLookAt(0,5,0, 0,0,0, 0,0,-1); // a câmera está no y=5 e o "cima" é o Z negativo
     glViewport(0,h/2, w/2, h/2); // Posição (0, 300), tamanho (400, 300)
     glEnable(GL_LIGHT2);
     glutSolidTeapot(1);
@@ -50,13 +50,12 @@ void display() {
   // de baixo para cima
   // Canto inferior esquerdo
   glPushMatrix();
-    gluLookAt(0,-5,0, 0,0,0, 0,0,1);
+    gluLookAt(0,-5,0, 0,0,0, 0,0,1); // a câmera está no y=5 e o "cima" é o Z positivo
     glViewport(0, 0, w/2, h/2); // Posição (0, 0), tamanho (400, 300)
     glEnable(GL_LIGHT1);
     glutSolidTeapot(1);
     glDisable(GL_LIGHT1);
   glPopMatrix();
-
 
   glFlush();
 }
@@ -75,15 +74,11 @@ void reshape(GLint w, GLint h) {
     glOrtho(-2.5*aspect, 2.5*aspect, -2.5, 2.5, -10.0, 10.0);
   }
 
-
 //   gluPerspective (60,aspect, 0.1, 15);
-
 }
 
 
 void init() {
-
-
   GLfloat black[] = { 0.0, 0.0, 0.0, 1.0 };
   GLfloat yellow[] = { 1.0, 1.0, 0.0, 1.0 };
   GLfloat cyan[] = { 0.0, 1.0, 1.0, 1.0 };
@@ -108,12 +103,8 @@ void init() {
   glLightfv(GL_LIGHT2, GL_SPECULAR, white);
   glLightfv(GL_LIGHT2, GL_POSITION, direction1);
 
-
-
   glEnable(GL_LIGHTING);                // so the renderer considers light
   glEnable(GL_DEPTH_TEST);              // so the renderer considers depth
-
-
 }
 
 // The usual application statup code.
