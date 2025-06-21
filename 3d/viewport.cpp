@@ -31,6 +31,7 @@ void display() {
   // de frente
   // canto superior direito
   glPushMatrix();
+    gluLookAt(0,0,5, 0,0,0, 0,1,0);
     glViewport(w/2, h/2, w/2, h/2);
     glEnable(GL_LIGHT1); // fica azul
     glutSolidTeapot(1);
@@ -66,15 +67,15 @@ void reshape(GLint w, GLint h) {
   GLfloat aspect = GLfloat(w) / GLfloat(h);
   glLoadIdentity();
 
- if (w <= h) {
-    // width is smaller, so stretch out the height
-    glOrtho(-2.5, 2.5, -2.5/aspect, 2.5/aspect, -10.0, 10.0);
-  } else {
-    // height is smaller, so stretch out the width
-    glOrtho(-2.5*aspect, 2.5*aspect, -2.5, 2.5, -10.0, 10.0);
-  }
+//  if (w <= h) {
+//     // width is smaller, so stretch out the height
+//     glOrtho(-2.5, 2.5, -2.5/aspect, 2.5/aspect, -10.0, 10.0);
+//   } else {
+//     // height is smaller, so stretch out the width
+//     glOrtho(-2.5*aspect, 2.5*aspect, -2.5, 2.5, -10.0, 10.0);
+//   }
 
-  // gluPerspective (60, aspect, 0.1, 15);
+  gluPerspective (60, aspect, 0.1, 15);
 }
 
 
