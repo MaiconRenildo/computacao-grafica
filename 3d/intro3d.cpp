@@ -18,20 +18,18 @@
 // This lets the viewer see how the torus goes around the cone.
 void display() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
   glMatrixMode(GL_MODELVIEW);
 
- gluLookAt(0, 0, 2.5,0,0,0, 0, 1, 0);
+  gluLookAt(0,0,2.5, 0,0,0, 0,1,0);
 
   // Make a torus floating 0.5 above the x-z plane.  The standard torus in
   // the GLUT library is, perhaps surprisingly, a stack of circles which
   // encircle the z-axis, so we need to rotate it 90 degrees about x to
   // get it the way we want.
   glPushMatrix();
-  glTranslatef(-0.75, 0.5, 0.0);
-  glRotatef(90.0, 1.0, 0.0, 0.0);
-  glutSolidTorus(0.275, 0.85, 16, 40);
+    glTranslatef(-0.75, 0.5, 0.0);
+    glRotatef(90.0, 1.0, 0.0, 0.0);
+    glutSolidTorus(0.275, 0.85, 16, 40);
   glPopMatrix();
 
   // Make a cone.  The standard cone "points" along z; we want it pointing
@@ -47,7 +45,6 @@ void display() {
     glTranslatef(0.75, 0.0, -1.0);
     glutSolidSphere(1.0, 30, 30);
   glPopMatrix();
-
 
   glFlush();
 }
@@ -87,20 +84,19 @@ void reshape(GLint w, GLint h) {
 // to make cyan colored objects with a fairly low shininess value.  Lighting
 // and depth buffer hidden surface removal are enabled here.
 void init() {
-
   GLfloat black[] = { 0.0, 0.0, 0.0, 1.0 };
   GLfloat yellow[] = { 1.0, 1.0, 0.0, 1.0 };
   GLfloat cyan[] = { 0.0, 1.0, 1.0, 1.0 };
   GLfloat white[] = { 1.0, 1.0, 1.0, 1.0 };
-  GLfloat direction[] = { 0.0, -10.0, 0.0, 1.0 };
-  GLfloat direction1[] = { 0.0, 10.0, 0.0, 1.0 };
+  GLfloat direction[] = { 0.0, -10.0, 0.0, 1.0 }; // luz vinda da parte de baixo
+  GLfloat direction1[] = { 0.0, 10.0, 0.0, 1.0 }; // luz vinda da parte de cima
 
   glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, cyan);
   glMaterialfv(GL_FRONT, GL_SPECULAR, white);
   glMaterialf(GL_FRONT, GL_SHININESS, 30);
 
   glLightfv(GL_LIGHT0, GL_AMBIENT, black);
-  glLightfv(GL_LIGHT0, GL_DIFFUSE, yellow);
+  glLightfv(GL_LIGHT0, GL_DIFFUSE, black); // o amarelo deixava esverdeado
   glLightfv(GL_LIGHT0, GL_SPECULAR, white);
   glLightfv(GL_LIGHT0, GL_POSITION, direction);
 
@@ -113,7 +109,6 @@ void init() {
   glEnable(GL_LIGHT0);                  // turn LIGHT0 on
   glEnable(GL_LIGHT1);
   glEnable(GL_DEPTH_TEST);              // so the renderer considers depth
-
 }
 
 // The usual application statup code.
