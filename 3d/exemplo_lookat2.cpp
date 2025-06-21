@@ -1,15 +1,5 @@
 #include <GL/glut.h>
 
-void cuboBranco(){
-    glColor3f(1.0f, 1.0f, 1.0f); // Cubo branco
-    glutSolidCube(1.0); 
-}
-
-void cuboAmarelo(){
-    glColor3f(1.0f, 1.0f, 0.0f); // Cubo amarelo
-    glutSolidCube(1.0); 
-}
-
 void init() {
     glEnable(GL_DEPTH_TEST);  
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);  
@@ -22,18 +12,29 @@ void display() {
     glLoadIdentity();
 
     // Define a câmera (posição, ponto a olhar, vetor "up")
-    gluLookAt(0.0, 0.0, 6.0,  // Posição da câmera (0, 0, 6)
+    gluLookAt(0.0, 0.0, 5.1,  // z acima de 5 exibe o branco
               0.0, 0.0, 0.0,  // Para onde a câmera olha 
               0.0, 1.0, 0.0); // Vetor "up" 
 
-    // Cubo na origem (0,0,0)
-    cuboBranco(); 
 
-    // Cubo nas coordendas (0, 1, 5) 
+    // branco -> z=-5
     glPushMatrix();
-    glTranslatef(0.0f, 1.0f, 5.0f);
-        cuboAmarelo();  
+    // Marcador para Z+
+      glTranslatef(0.0f, 0.0f, -5.0); // Move para Z+
+      glRotatef(-90.0f, 1.0f, 0.0f, 0.0f); // Roda o cone para apontar para +Z
+      glColor3f(1.0f, 1.0f, 1.0f);
+      glutSolidCone(0.3f, 1.0f, 20, 20);
     glPopMatrix();
+
+    // azul -> z=5
+    glPushMatrix();
+    // Marcador para Z+
+      glTranslatef(0.0f, 0.0f, 5.0); // Move para Z+
+      glRotatef(-90.0f, 1.0f, 0.0f, 0.0f); // Roda o cone para apontar para +Z
+      glColor3f(0.0f, 0.0f, 0.8f); // azul escuro para Z+
+      glutSolidCone(0.3f, 1.0f, 20, 20);
+    glPopMatrix();
+
 
     glutSwapBuffers(); 
 }
@@ -45,7 +46,8 @@ void reshape(int w, int h) {
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(60.0, aspect, 1.0, 100.0); // Projeção em perspectiva
+    // gluPerspective(60.0, aspect, 1.0, 100.0); // Projeção em perspectiva
+    glOrtho(-2.5, 2.5, -2.5/aspect, 2.5/aspect, 1.0, 20.0);
 }
 
 int main(int argc, char** argv) {
