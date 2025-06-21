@@ -12,8 +12,9 @@ GLfloat angle, fAspect;
 GLfloat windowWidth = 400;
 GLfloat windowHeight = 400;
 GLfloat r, g, b;
-GLint especMaterial; 
-float penguimPaiX = 2.0;
+GLint especMaterial;
+float initialPenfuimPaiX = 2.0;
+float penguimPaiX = initialPenfuimPaiX;
 float penguimPaiZ = 0.0;
 
 // Variáveis para controle da câmera com gluLookAt
@@ -32,16 +33,16 @@ void PosicionaObservador(void) {
     
     // Calcula a posição da câmera baseada na posição do pinguim pai
     float radAngle = cameraAngle * M_PI / 180.0f;
-    float camX = penguimPaiX - cameraDistance * sin(radAngle);
+    float camX = penguimPaiX - initialPenfuimPaiX - cameraDistance * sin(radAngle);
     float camZ = penguimPaiZ - cameraDistance * cos(radAngle);
     float camY = cameraHeight;
     
-    // Define o ponto para onde a câmera está olhando (ligeiramente à frente do pinguim)
-    float lookAheadX = penguimPaiX + sin(radAngle) * 2.0f;
-    float lookAheadZ = penguimPaiZ + cos(radAngle) * 2.0f;
+    //// Define o ponto para onde a câmera está olhando (ligeiramente à frente do pinguim)
+    // float lookAheadX =initialPenfuimPaiX + sin(radAngle) * 2.0f;
+    // float lookAheadZ = penguimPaiZ + cos(radAngle) * 2.0f;
     
     gluLookAt(camX, camY, camZ,       // Posição da câmera
-              penguimPaiX, 0.0, penguimPaiZ,  // Ponto de observação
+              0, 0.0, penguimPaiZ,  // Ponto de observação
               0.0, 1.0, 0.0);         // Vetor "up"
 }
 
@@ -471,8 +472,8 @@ void Inicializa(void) {
     angle = 50;
     
     // Inicializa parâmetros da câmera em 3ª pessoa
-    cameraDistance = 5.0f;
-    cameraHeight = 2.0f;
+    cameraDistance = 20.0f;
+    cameraHeight = 10.0f;
     cameraAngle = 0.0f;
 }
 
