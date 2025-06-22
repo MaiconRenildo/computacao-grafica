@@ -25,6 +25,7 @@ XYZ inp[NI+1][NJ+1];
 #define RESOLUTIONJ 3*NJ
 XYZ outp[RESOLUTIONI][RESOLUTIONJ];
 
+/////////////////// funções base
 double BezierBlend(int k,double mu, int n)
 {
    int nn,kn,nkn;
@@ -54,8 +55,7 @@ double BezierBlend(int k,double mu, int n)
    return(blend);
 }
 
-void generateControlPoint()
-{
+void generateControlPoint(){
 	   int nMax = 2;
 	   int nMin = -2;
 	   int i,j;
@@ -64,14 +64,13 @@ void generateControlPoint()
 	      for (j=0;j<=NJ;j++) {
 	         inp[i][j].x = i;
 	         inp[i][j].y = j;
-	        //  inp[i][j].z = random()%((nMax+1)-nMin) + nMin;
+	        //  inp[i][j].z = random()%((nMax+1)-nMin) + nMin; # valor original
 	        inp[i][j].z = 4*sin(timer-i);
 	      }
 	   }
 }
 
-void Surface()
-{
+void Surface(){
    int i,j,ki,kj;
    double mui,muj,bi,bj;
    /* Create a random surface */
@@ -93,8 +92,9 @@ void Surface()
          }
       }
    }
-
 }
+
+///////////////////
 
 int BRASS = 0;
 int BRONZE = 1;
@@ -142,8 +142,7 @@ float SPECULAR_EXPONENTS[] =
 80.0f       // BLUE_SURFACE (novo)
 };
 
-float MATERIAL_COLORS[][3][4] =
-{
+float MATERIAL_COLORS[][3][4] = {
 // BRASS 0
 {
 {0.329412, 0.223529, 0.027451, 1.000000}, // Ambient RGBA
@@ -302,14 +301,6 @@ void aplicaMaterial(int matIndex) {
     glMaterialf(GL_FRONT, GL_SHININESS, SPECULAR_EXPONENTS[matIndex]);
 }
 
-void DrawTableLeg() {
-    aplicaMaterial(WOOD);
-    glPushMatrix();
-        glScalef(0.2f, 1.0f, 0.2f);
-        glutSolidCube(1.0);
-    glPopMatrix();
-}
-
 void DrawBezierSurface() {
     int i, j;
     for (i = 0; i < RESOLUTIONI - 1; i++) {
@@ -338,7 +329,7 @@ void display() {
     glLoadIdentity();
 
     gluLookAt(
-        0.0, 20.0, 6.0,   // posição da câmera
+        0.0, 35.0, 6.0,   // posição da câmera
         0.0, 0.0, 0.0, // olhar para o centro da superfície
         0.0, 0.0, 1.0       // "up" é eixo z
     );
