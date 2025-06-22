@@ -103,6 +103,8 @@ void Desenha(void)
 
 	glBegin(GL_TRIANGLES);
 	glNormal3f(0, 0, 1);
+	// float normalArray[3] = { 0, 0, 1 };
+	// glNormal3fv(normalArray);
 	// Triângulo 1
 	glVertex3f( 50.0,  50.0,  50.0); // V0
 	glVertex3f(-50.0,  50.0,  50.0); // V1

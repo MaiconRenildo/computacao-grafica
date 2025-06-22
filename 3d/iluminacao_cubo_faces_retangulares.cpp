@@ -104,6 +104,8 @@ void Desenha(void)
 	// Face frontal (Z positivo)
 	glBegin(GL_POLYGON);
 	glNormal3f(0, 0, 1);
+	// float normalArray[3] = { 0, 0, 1 };
+	// glNormal3fv(normalArray);
 	glVertex3f( 50.0,  50.0,  50.0); // V0
 	glVertex3f(-50.0,  50.0,  50.0); // V1
 	glVertex3f(-50.0, -50.0,  50.0); // V2
