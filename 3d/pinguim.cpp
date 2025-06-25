@@ -41,7 +41,7 @@ void PosicionaObservador(void) {
     // float lookAheadX =initialPenfuimPaiX + sin(radAngle) * 2.0f;
     // float lookAheadZ = penguimPaiZ + cos(radAngle) * 2.0f;
     
-    gluLookAt(camX, camY, camZ,       // Posição da câmera
+    gluLookAt(camX, camY, 1.0,       // Posição da câmera
               0, 0.0, penguimPaiZ,  // Ponto de observação
               0.0, 1.0, 0.0);         // Vetor "up"
 }
@@ -389,12 +389,38 @@ void drawFish() {
     glPopMatrix();
 }
 
-void drawSheetOfIce(){
+void drawBuraco(float x, float y, float z, float radius) {
+    int numSegments = 50; // Número de segmentos do círculo
+    glColor3f(0.0f, 0.0f, 0.0f); // Cor preta para o "buraco"
+
+    glPushMatrix();
+        glTranslatef(x, y, z);
+
+        glBegin(GL_TRIANGLE_FAN);
+            glVertex3f(0.0f, 0.0f, 0.0f); // Centro do círculo
+            for(int i = 0; i <= numSegments; i++) {
+                float angle = 2.0f * 3.1415926f * (float)i / (float)numSegments;
+                float dx = cosf(angle) * radius;
+                float dy = sinf(angle) * radius;
+                glVertex3f(dx, dy, 0.0f);
+            }
+        glEnd();
+    glPopMatrix();
+}
+
+void drawSheetOfIce() {
+    // Gelo
     glColor3f(0.7f, 0.9f, 1.0f);
     glPushMatrix();
         glTranslatef(-0.0, -0.5, 0.0);
         glScalef(20.0, 1, 20.0);
         glutSolidCube(1.0);
+    glPopMatrix();
+
+    // Buraco
+    glPushMatrix();
+        glRotatef(45.0f, 1.0f, 0.0f, 0.0f);
+        drawBuraco(0.0f, 1.65f, 0.7f, 1.0f);
     glPopMatrix();
 }
 
