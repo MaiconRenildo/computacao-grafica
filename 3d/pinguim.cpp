@@ -4,9 +4,19 @@
 #include <GL/glut.h>
 #endif
 
-#include <stdio.h>
+#include <GL/glut.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
+
+#define NUM_BURACOS 5
+
+float buracoX[NUM_BURACOS];
+float buracoZ[NUM_BURACOS];
+float buracoRadius = 1.0f;
+int lastToggleTime = 0;
+int showBuracos = 1;
+
 
 GLfloat angle, fAspect;
 GLfloat windowWidth = 400;
@@ -41,7 +51,7 @@ void PosicionaObservador(void) {
     // float lookAheadX =initialPenfuimPaiX + sin(radAngle) * 2.0f;
     // float lookAheadZ = penguimPaiZ + cos(radAngle) * 2.0f;
     
-    gluLookAt(camX, camY, 1.0,       // Posição da câmera
+    gluLookAt(camX, camY, camZ,       // Posição da câmera
               0, 0.0, penguimPaiZ,  // Ponto de observação
               0.0, 1.0, 0.0);         // Vetor "up"
 }
@@ -49,7 +59,7 @@ void PosicionaObservador(void) {
 // Função para animação 
 void doFrame(int v){
     glutPostRedisplay();
-    glutTimerFunc(20, doFrame, 0);
+    glutTimerFunc(12, doFrame, 0);
 }
 
 // Função responsável pela especificação dos parâmetros de iluminação
@@ -389,22 +399,33 @@ void drawFish() {
     glPopMatrix();
 }
 
+void gereBuracos() {
+    float minX = -10.0f, maxX = 10.0f;
+    float minZ = -10.0f, maxZ = 10.0f;
+
+    for (int i = 0; i < NUM_BURACOS; i++) {
+        buracoX[i] = minX + (float)rand() / RAND_MAX * (maxX - minX);
+        buracoZ[i] = minZ + (float)rand() / RAND_MAX * (maxZ - minZ);
+    }
+}
+
 void drawBuraco(float x, float y, float z, float radius) {
-    int numSegments = 50; // Número de segmentos do círculo
-    glColor3f(0.0f, 0.0f, 0.0f); // Cor preta para o "buraco"
+    int numSegments = 50;
+    glColor3f(0.0f, 0.0f, 0.0f); // Cor preta para o buraco
 
     glPushMatrix();
         glTranslatef(x, y, z);
 
-        glBegin(GL_TRIANGLE_FAN);
-            glVertex3f(0.0f, 0.0f, 0.0f); // Centro do círculo
-            for(int i = 0; i <= numSegments; i++) {
-                float angle = 2.0f * 3.1415926f * (float)i / (float)numSegments;
-                float dx = cosf(angle) * radius;
-                float dy = sinf(angle) * radius;
-                glVertex3f(dx, dy, 0.0f);
-            }
-        glEnd();
+        // Alinha o buraco com a superfície (horizontal)
+        glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+
+        // Desenha o buraco como um cilindro fino
+        GLUquadricObj *quadric = gluNewQuadric();
+        gluQuadricNormals(quadric, GLU_SMOOTH);
+        gluDisk(quadric, 0, radius, numSegments, 1);
+        
+        gluCylinder(quadric, radius, radius, 0.1, numSegments, 1);
+        gluDeleteQuadric(quadric);
     glPopMatrix();
 }
 
@@ -412,16 +433,17 @@ void drawSheetOfIce() {
     // Gelo
     glColor3f(0.7f, 0.9f, 1.0f);
     glPushMatrix();
-        glTranslatef(-0.0, -0.5, 0.0);
+        glTranslatef(0.0, -0.5, 0.0);
         glScalef(20.0, 1, 20.0);
         glutSolidCube(1.0);
     glPopMatrix();
 
-    // Buraco
-    glPushMatrix();
-        glRotatef(45.0f, 1.0f, 0.0f, 0.0f);
-        drawBuraco(0.0f, 1.65f, 0.7f, 1.0f);
-    glPopMatrix();
+    // Buracos 
+    if (showBuracos) {
+        for (int i = 0; i < NUM_BURACOS; i++) {
+            drawBuraco(buracoX[i], 0.1f, buracoZ[i], buracoRadius);
+        }
+    }
 }
 
 // Função callback chamada para fazer o desenho
@@ -511,10 +533,12 @@ int main(int argc, char *argv[]){
     glutInitWindowSize(windowWidth, windowHeight);
     glutCreateWindow("Pinguim com gluLookAt");
 
+    srand((unsigned int)time(NULL));
+    gereBuracos();
     glutDisplayFunc(Desenha);
     glutReshapeFunc(AlteraTamanhoJanela);
     glutKeyboardFunc(Teclado);
-    
+
     doFrame(0);
     Inicializa();
     glutMainLoop();
