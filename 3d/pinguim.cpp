@@ -10,6 +10,7 @@
 #include <time.h>
 
 #define NUM_BURACOS 5
+#define NUM_PEIXES 4
 
 float buracoX[NUM_BURACOS];
 float buracoZ[NUM_BURACOS];
@@ -30,6 +31,11 @@ float cameraDistance = 5.0f;
 float cameraHeight = 2.0f;
 float cameraAngle = 0.0f;
 
+// Variáveis para os peixes
+float fishPositions[NUM_PEIXES] = { -8.0f, -4.0f, 4.0f, 8.0f };
+float fishSpeeds[NUM_PEIXES] = { 0.05f, 0.07f, 0.06f, 0.04f };
+int fishDirections[NUM_PEIXES] = { 1, 1, -1, -1 }; // 1 para frente, -1 para trás
+
 // Limites da folha de gelo
 const float ICE_SHEET_HALF_SIZE = 10.0f;
 const float PENGUIN_RADIUS = 1.0f; // Raio aproximado do pinguim
@@ -44,6 +50,19 @@ void PosicionaObservador(void) {
     float camY = cameraHeight;
     
     gluLookAt(camX, camY, camZ, 0, 0.0, penguimPaiZ, 0.0, 1.0, 0.0);
+}
+
+void updateFishPositions() {
+    for (int i = 0; i < NUM_PEIXES; i++) {
+        fishPositions[i] += fishSpeeds[i] * fishDirections[i];
+        
+        // Verifica os limites e inverte a direção se necessário
+        if (fishPositions[i] > ICE_SHEET_HALF_SIZE) {
+            fishDirections[i] = -1;
+        } else if (fishPositions[i] < -ICE_SHEET_HALF_SIZE) {
+            fishDirections[i] = 1;
+        }
+    }
 }
 
 void doFrame(int v){
@@ -63,6 +82,7 @@ void doFrame(int v){
         lastToggleTime = currentTime;
     }
     
+    updateFishPositions();
     glutPostRedisplay();
     glutTimerFunc(12, doFrame, 0);
 }
@@ -319,9 +339,14 @@ void drawPenguimBaby(){
     glPopMatrix();
 }
 
-void drawFish() {
+void drawFishAtPosition(float x, float z, int direction) {
     glPushMatrix();
-        glTranslatef(-2.0, 0.40, 0.0);
+        glTranslatef(x, 0.40, z);
+        
+        // Rotaciona o peixe para a direção correta
+        if (direction < 0) {
+            glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
+        }
 
         glColor3f(1.0, 0.4, 0.0);
         glPushMatrix();
@@ -400,6 +425,12 @@ void drawFish() {
     glPopMatrix();
 }
 
+void drawFishes() {
+    for (int i = 0; i < NUM_PEIXES; i++) {
+        drawFishAtPosition(2.0f + i * 1.5f, fishPositions[i], fishDirections[i]);
+    }
+}
+
 void drawBuraco(float x, float y, float z, float radius) {
     int numSegments = 50;
     glColor3f(0.0f, 0.0f, 0.0f);
@@ -441,7 +472,7 @@ void Desenha(void){
     drawSheetOfIce();
     drawPenguimDad();
     drawPenguimBaby();
-    drawFish();
+    drawFishes();
     glutSwapBuffers();
 }
 
@@ -489,7 +520,6 @@ void Teclado(unsigned char key, int x, int y) {
     }
 
     // Verifica se a nova posição está dentro dos limites da folha de gelo
-    // Considerando o raio aproximado do pinguim
     if (newX > (-ICE_SHEET_HALF_SIZE + PENGUIN_RADIUS) && 
         newX < (ICE_SHEET_HALF_SIZE - PENGUIN_RADIUS) &&
         newZ > (-ICE_SHEET_HALF_SIZE + PENGUIN_RADIUS) && 
