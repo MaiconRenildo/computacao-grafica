@@ -27,10 +27,6 @@ float initialPenfuimPaiX = 2.0;
 float penguimPaiX = initialPenfuimPaiX;
 float penguimPaiZ = 0.0;
 
-// Variáveis para controle da câmera com gluLookAt
-GLfloat cameraX = 0.0f, cameraY = 5.0f, cameraZ = 10.0f;
-GLfloat lookAtX = 0.0f, lookAtY = 0.0f, lookAtZ = 0.0f;
-GLfloat upX = 0.0f, upY = 1.0f, upZ = 0.0f;
 
 float cameraDistance = 5.0f;    // Distância da câmera ao pinguim
 float cameraHeight = 2.0f;      // Altura da câmera em relação ao pinguim
@@ -47,10 +43,6 @@ void PosicionaObservador(void) {
     float camZ = penguimPaiZ - cameraDistance * cos(radAngle);
     float camY = cameraHeight;
     
-    //// Define o ponto para onde a câmera está olhando (ligeiramente à frente do pinguim)
-    // float lookAheadX =initialPenfuimPaiX + sin(radAngle) * 2.0f;
-    // float lookAheadZ = penguimPaiZ + cos(radAngle) * 2.0f;
-    
     gluLookAt(camX, camY, camZ,       // Posição da câmera
               0, 0.0, penguimPaiZ,  // Ponto de observação
               0.0, 1.0, 0.0);         // Vetor "up"
@@ -58,6 +50,24 @@ void PosicionaObservador(void) {
 
 // Função para animação 
 void doFrame(int v){
+    int currentTime = glutGet(GLUT_ELAPSED_TIME);
+    
+    // Alterna a visibilidade dos buracos a cada 10 segundos
+    if (currentTime - lastToggleTime > 10000) { // 10000 ms = 10 segundos
+        showBuracos = !showBuracos;
+        if (showBuracos) {
+            // Gera novos buracos quando eles reaparecem
+            float minX = -9.0f, maxX = 9.0f;  // Limites dentro da sheet of ice
+            float minZ = -9.0f, maxZ = 9.0f;
+            
+            for (int i = 0; i < NUM_BURACOS; i++) {
+                buracoX[i] = minX + (float)rand() / RAND_MAX * (maxX - minX);
+                buracoZ[i] = minZ + (float)rand() / RAND_MAX * (maxZ - minZ);
+            }
+        }
+        lastToggleTime = currentTime;
+    }
+    
     glutPostRedisplay();
     glutTimerFunc(12, doFrame, 0);
 }
@@ -399,16 +409,6 @@ void drawFish() {
     glPopMatrix();
 }
 
-void gereBuracos() {
-    float minX = -10.0f, maxX = 10.0f;
-    float minZ = -10.0f, maxZ = 10.0f;
-
-    for (int i = 0; i < NUM_BURACOS; i++) {
-        buracoX[i] = minX + (float)rand() / RAND_MAX * (maxX - minX);
-        buracoZ[i] = minZ + (float)rand() / RAND_MAX * (maxZ - minZ);
-    }
-}
-
 void drawBuraco(float x, float y, float z, float radius) {
     int numSegments = 50;
     glColor3f(0.0f, 0.0f, 0.0f); // Cor preta para o buraco
@@ -523,6 +523,17 @@ void Inicializa(void) {
     cameraDistance = 20.0f;
     cameraHeight = 10.0f;
     cameraAngle = 0.0f;
+    
+    // Gera buracos iniciais
+    float minX = -9.0f, maxX = 9.0f;  // Limites dentro da sheet of ice
+    float minZ = -9.0f, maxZ = 9.0f;
+    
+    for (int i = 0; i < NUM_BURACOS; i++) {
+        buracoX[i] = minX + (float)rand() / RAND_MAX * (maxX - minX);
+        buracoZ[i] = minZ + (float)rand() / RAND_MAX * (maxZ - minZ);
+    }
+    
+    lastToggleTime = glutGet(GLUT_ELAPSED_TIME);
 }
 
 // Programa Principal
@@ -534,13 +545,12 @@ int main(int argc, char *argv[]){
     glutCreateWindow("Pinguim com gluLookAt");
 
     srand((unsigned int)time(NULL));
-    gereBuracos();
+    Inicializa();
     glutDisplayFunc(Desenha);
     glutReshapeFunc(AlteraTamanhoJanela);
     glutKeyboardFunc(Teclado);
 
     doFrame(0);
-    Inicializa();
     glutMainLoop();
     return 0;
 }
