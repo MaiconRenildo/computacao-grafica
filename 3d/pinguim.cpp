@@ -17,7 +17,6 @@ float buracoRadius = 1.0f;
 int lastToggleTime = 0;
 int showBuracos = 1;
 
-
 GLfloat angle, fAspect;
 GLfloat windowWidth = 400;
 GLfloat windowHeight = 400;
@@ -27,37 +26,33 @@ float initialPenfuimPaiX = 2.0;
 float penguimPaiX = initialPenfuimPaiX;
 float penguimPaiZ = 0.0;
 
+float cameraDistance = 5.0f;
+float cameraHeight = 2.0f;
+float cameraAngle = 0.0f;
 
-float cameraDistance = 5.0f;    // Distância da câmera ao pinguim
-float cameraHeight = 2.0f;      // Altura da câmera em relação ao pinguim
-float cameraAngle = 0.0f;       // Ângulo da câmera ao redor do pinguim (em graus)
-
+// Limites da folha de gelo
+const float ICE_SHEET_HALF_SIZE = 10.0f;
+const float PENGUIN_RADIUS = 1.0f; // Raio aproximado do pinguim
 
 void PosicionaObservador(void) {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     
-    // Calcula a posição da câmera baseada na posição do pinguim pai
     float radAngle = cameraAngle * M_PI / 180.0f;
     float camX = penguimPaiX - initialPenfuimPaiX - cameraDistance * sin(radAngle);
     float camZ = penguimPaiZ - cameraDistance * cos(radAngle);
     float camY = cameraHeight;
     
-    gluLookAt(camX, camY, camZ,       // Posição da câmera
-              0, 0.0, penguimPaiZ,  // Ponto de observação
-              0.0, 1.0, 0.0);         // Vetor "up"
+    gluLookAt(camX, camY, camZ, 0, 0.0, penguimPaiZ, 0.0, 1.0, 0.0);
 }
 
-// Função para animação 
 void doFrame(int v){
     int currentTime = glutGet(GLUT_ELAPSED_TIME);
     
-    // Alterna a visibilidade dos buracos a cada 10 segundos
-    if (currentTime - lastToggleTime > 10000) { // 10000 ms = 10 segundos
+    if (currentTime - lastToggleTime > 10000) {
         showBuracos = !showBuracos;
         if (showBuracos) {
-            // Gera novos buracos quando eles reaparecem
-            float minX = -9.0f, maxX = 9.0f;  // Limites dentro da sheet of ice
+            float minX = -9.0f, maxX = 9.0f;
             float minZ = -9.0f, maxZ = 9.0f;
             
             for (int i = 0; i < NUM_BURACOS; i++) {
@@ -72,7 +67,6 @@ void doFrame(int v){
     glutTimerFunc(12, doFrame, 0);
 }
 
-// Função responsável pela especificação dos parâmetros de iluminação
 void DefineIluminacao(void){
     GLfloat luzAmbiente[4]={0.2,0.2,0.2,1.0};
     GLfloat luzDifusa[4]={0.7,0.7,0.7,1.0};
@@ -115,7 +109,6 @@ void drawAxes() {
 
     glEnd();
 
-    // Marcadores nos eixos positivos
     glPushMatrix();
         glTranslatef(10.0f, 0.0f, 0.0f);
         glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
@@ -195,7 +188,6 @@ void drawCone(GLdouble baseRadius, GLdouble topRadius, GLdouble height, GLint sl
     gluDeleteQuadric(quadric);
 }
 
-////////////////////////////////// PENGUIM
 void drawPenguimBody(){
     glColor3f(0.0, 0.0, 0.0);
     glPushMatrix();
@@ -326,7 +318,6 @@ void drawPenguimBaby(){
         drawPenguim();
     glPopMatrix();
 }
-//////////////////////////////////
 
 void drawFish() {
     glPushMatrix();
@@ -411,15 +402,12 @@ void drawFish() {
 
 void drawBuraco(float x, float y, float z, float radius) {
     int numSegments = 50;
-    glColor3f(0.0f, 0.0f, 0.0f); // Cor preta para o buraco
+    glColor3f(0.0f, 0.0f, 0.0f);
 
     glPushMatrix();
         glTranslatef(x, y, z);
-
-        // Alinha o buraco com a superfície (horizontal)
         glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
 
-        // Desenha o buraco como um cilindro fino
         GLUquadricObj *quadric = gluNewQuadric();
         gluQuadricNormals(quadric, GLU_SMOOTH);
         gluDisk(quadric, 0, radius, numSegments, 1);
@@ -446,7 +434,6 @@ void drawSheetOfIce() {
     }
 }
 
-// Função callback chamada para fazer o desenho
 void Desenha(void){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     DefineIluminacao();
@@ -458,8 +445,6 @@ void Desenha(void){
     glutSwapBuffers();
 }
 
-
-// Função usada para especificar o volume de visualização
 void EspecificaParametrosVisualizacao(void){
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -467,7 +452,6 @@ void EspecificaParametrosVisualizacao(void){
     PosicionaObservador();
 }
 
-// Função callback chamada quando o tamanho da janela é alterado
 void AlteraTamanhoJanela(GLsizei w, GLsizei h){
     windowHeight = h;
     windowWidth = w;
@@ -477,30 +461,44 @@ void AlteraTamanhoJanela(GLsizei w, GLsizei h){
     EspecificaParametrosVisualizacao();
 }
 
-// Função callback para gerenciar eventos de teclado
 void Teclado(unsigned char key, int x, int y) {
-    float step = 0.1f;       // Velocidade do movimento do pinguim
-    float angleStep = 5.0f;  // Velocidade de rotação da câmera
+    float step = 0.1f;
+    float angleStep = 5.0f;
+
+    // Calcula a nova posição temporária
+    float newX = penguimPaiX;
+    float newZ = penguimPaiZ;
 
     switch(key) {
-        // Movimento do pinguim pai
         case 'w':
         case 'W':
-            penguimPaiZ += step;
+            newZ += step;
             break;
         case 's':
         case 'S':
-            penguimPaiZ -= step;
+            newZ -= step;
             break;
         case 'a':
         case 'A':
-            penguimPaiX += step;
+            newX += step;
             break;
         case 'd':
         case 'D':
-            penguimPaiX -= step;
+            newX -= step;
             break;
     }
+
+    // Verifica se a nova posição está dentro dos limites da folha de gelo
+    // Considerando o raio aproximado do pinguim
+    if (newX > (-ICE_SHEET_HALF_SIZE + PENGUIN_RADIUS) && 
+        newX < (ICE_SHEET_HALF_SIZE - PENGUIN_RADIUS) &&
+        newZ > (-ICE_SHEET_HALF_SIZE + PENGUIN_RADIUS) && 
+        newZ < (ICE_SHEET_HALF_SIZE - PENGUIN_RADIUS)) {
+        
+        penguimPaiX = newX;
+        penguimPaiZ = newZ;
+    }
+
     glutPostRedisplay();
 }
 
@@ -519,13 +517,11 @@ void Inicializa(void) {
     
     angle = 50;
     
-    // Inicializa parâmetros da câmera em 3ª pessoa
     cameraDistance = 20.0f;
     cameraHeight = 10.0f;
     cameraAngle = 0.0f;
     
-    // Gera buracos iniciais
-    float minX = -9.0f, maxX = 9.0f;  // Limites dentro da sheet of ice
+    float minX = -9.0f, maxX = 9.0f;
     float minZ = -9.0f, maxZ = 9.0f;
     
     for (int i = 0; i < NUM_BURACOS; i++) {
@@ -536,7 +532,6 @@ void Inicializa(void) {
     lastToggleTime = glutGet(GLUT_ELAPSED_TIME);
 }
 
-// Programa Principal
 int main(int argc, char *argv[]){
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
