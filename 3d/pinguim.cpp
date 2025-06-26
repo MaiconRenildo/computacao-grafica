@@ -9,15 +9,18 @@
 #include <math.h>
 #include <time.h>
 
-#define NUM_BURACOS 5
+// Algumas constantes
+#define NUM_BURACOS 3
 #define NUM_PEIXES 4
 
+// Variáveis para os buracos
 float buracoX[NUM_BURACOS];
 float buracoZ[NUM_BURACOS];
 float buracoRadius = 1.0f;
 int lastToggleTime = 0;
 int showBuracos = 1;
 
+// Variáveis câmera e iluminação
 GLfloat angle, fAspect;
 GLfloat windowWidth = 400;
 GLfloat windowHeight = 400;
@@ -32,9 +35,10 @@ float cameraHeight = 2.0f;
 float cameraAngle = 0.0f;
 
 // Variáveis para os peixes
-float fishPositions[NUM_PEIXES] = { -8.0f, -4.0f, 4.0f, 8.0f };
+float fishPositionsX[NUM_PEIXES] = { -6.0f, -3.5f, 4.0f, 7.0f };
+float fishPositionsZ[NUM_PEIXES] = { -8.0f, -4.0f, 4.0f, 8.0f };
 float fishSpeeds[NUM_PEIXES] = { 0.05f, 0.07f, 0.06f, 0.04f };
-int fishDirections[NUM_PEIXES] = { 1, 1, -1, -1 }; // 1 para frente, -1 para trás
+int fishDirections[NUM_PEIXES] = { -1, 1, 1, -1 }; // 1 para frente, -1 para trás
 
 // Limites da folha de gelo
 const float ICE_SHEET_HALF_SIZE = 10.0f;
@@ -54,12 +58,12 @@ void PosicionaObservador(void) {
 
 void updateFishPositions() {
     for (int i = 0; i < NUM_PEIXES; i++) {
-        fishPositions[i] += fishSpeeds[i] * fishDirections[i];
+        fishPositionsZ[i] += fishSpeeds[i] * fishDirections[i];
         
         // Verifica os limites e inverte a direção se necessário
-        if (fishPositions[i] > ICE_SHEET_HALF_SIZE) {
+        if (fishPositionsZ[i] > ICE_SHEET_HALF_SIZE) {
             fishDirections[i] = -1;
-        } else if (fishPositions[i] < -ICE_SHEET_HALF_SIZE) {
+        } else if (fishPositionsZ[i] < -ICE_SHEET_HALF_SIZE) {
             fishDirections[i] = 1;
         }
     }
@@ -426,8 +430,9 @@ void drawFishAtPosition(float x, float z, int direction) {
 }
 
 void drawFishes() {
+    //2.0f + i * 1.5f,
     for (int i = 0; i < NUM_PEIXES; i++) {
-        drawFishAtPosition(2.0f + i * 1.5f, fishPositions[i], fishDirections[i]);
+        drawFishAtPosition(fishPositionsX[i], fishPositionsZ[i], fishDirections[i]);
     }
 }
 
