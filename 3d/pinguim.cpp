@@ -16,9 +16,9 @@
 #define BABY_HUNGER_TIME_MS 60000 // 1 minuto
 
 // Variáveis para os buracos
-float buracoX[NUM_BURACOS];
-float buracoZ[NUM_BURACOS];
-float buracoRadius = 1.0;
+float holeX[NUM_BURACOS];
+float holeZ[NUM_BURACOS];
+float holeRadius = 1.0;
 int lastToggleTime = 0;
 int showHoles = 0;
 
@@ -163,12 +163,12 @@ void endGame(int isVictory, const char* message) { // NOVO: Recebe 'message'
 void checkHoleCollisions() {
     const float COLLISION_SENSITIVITY = 0.8; 
     const float EFFECTIVE_PENGUIN_RADIUS = PENGUIN_RADIUS * COLLISION_SENSITIVITY;
-    const float EFFECTIVE_HOLE_RADIUS = buracoRadius * COLLISION_SENSITIVITY;
+    const float EFFECTIVE_HOLE_RADIUS = holeRadius * COLLISION_SENSITIVITY;
     
     for (int i = 0; i < NUM_BURACOS; i++) {
         if (showHoles) {
-            float dx = motherPenguinX - buracoX[i];
-            float dz = motherPenguinZ - buracoZ[i];
+            float dx = motherPenguinX - holeX[i];
+            float dz = motherPenguinZ - holeZ[i];
             float distance = sqrt(dx * dx + dz * dz);
             distance = distance + (distance/2); // melhora percepção de sobreposição
             
@@ -253,8 +253,8 @@ void doFrame(int v){
             float minZ = -9.0f, maxZ = 9.0;
             
             for (int i = 0; i < NUM_BURACOS; i++) {
-                buracoX[i] = minX + (float)rand() / RAND_MAX * (maxX - minX);
-                buracoZ[i] = minZ + (float)rand() / RAND_MAX * (maxZ - minZ);
+                holeX[i] = minX + (float)rand() / RAND_MAX * (maxX - minX);
+                holeZ[i] = minZ + (float)rand() / RAND_MAX * (maxZ - minZ);
             }
         }
         lastToggleTime = currentTime;
@@ -669,7 +669,7 @@ void drawSheetOfIce() {
     // Buracos 
     if (showHoles) {
         for (int i = 0; i < NUM_BURACOS; i++) {
-            drawBuraco(buracoX[i], 0.1f, buracoZ[i], buracoRadius);
+            drawBuraco(holeX[i], 0.1f, holeZ[i],    holeRadius);
         }
     }
 }
@@ -787,8 +787,8 @@ void Inicializa(void) {
     float minZ = -9.0f, maxZ = 9.0;
     
     for (int i = 0; i < NUM_BURACOS; i++) {
-        buracoX[i] = minX + (float)rand() / RAND_MAX * (maxX - minX);
-        buracoZ[i] = minZ + (float)rand() / RAND_MAX * (maxZ - minZ);
+        holeX[i] = minX + (float)rand() / RAND_MAX * (maxX - minX);
+        holeZ[i] = minZ + (float)rand() / RAND_MAX * (maxZ - minZ);
     }
     
     lastToggleTime = glutGet(GLUT_ELAPSED_TIME);
