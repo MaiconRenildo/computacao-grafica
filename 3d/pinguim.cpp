@@ -101,7 +101,7 @@ void drawSheetOfIce(void);
 void draw(void);
 void specifyViewParameters(void);
 void resizeWindow(GLsizei w, GLsizei h);
-void keyboard(unsigned char key, int x, int y);
+void keyboard(int key, int x, int y);
 void initialize(void);
 // --- FIM DAS DECLARAÇÕES ---
 
@@ -700,7 +700,7 @@ void resizeWindow(GLsizei w, GLsizei h){
     specifyViewParameters();
 }
 
-void keyboard(unsigned char key, int x, int y) {
+void keyboard(int key, int x, int y) {
     float step = 0.3;
     float angleStep = 5.0;
 
@@ -709,8 +709,7 @@ void keyboard(unsigned char key, int x, int y) {
     float newZ = motherPenguinZ;
 
     switch(key) {
-        case 'w':
-        case 'W':
+        case GLUT_KEY_UP: // Seta para Cima
             if (direcaoAtualPinguim == FACING_FORWARD) {
                 newZ += step;
             } else {
@@ -718,8 +717,7 @@ void keyboard(unsigned char key, int x, int y) {
                 penguimRotationAngle = 0.0;
             }
             break;
-        case 's':
-        case 'S':
+        case GLUT_KEY_DOWN: // Seta para Baixo
             if (direcaoAtualPinguim == FACING_BACKWARD) {
                 newZ -= step;
             } else {
@@ -727,8 +725,7 @@ void keyboard(unsigned char key, int x, int y) {
                 penguimRotationAngle = 180.0;
             }
             break;
-        case 'a':
-        case 'A':
+        case GLUT_KEY_LEFT: // Seta para Esquerda
             if (direcaoAtualPinguim == FACING_LEFT) {
                 newX += step;
             } else {
@@ -736,8 +733,7 @@ void keyboard(unsigned char key, int x, int y) {
                 penguimRotationAngle = 90.0;
             }
             break;
-        case 'd':
-        case 'D':
+        case GLUT_KEY_RIGHT: // Seta para Direita
             if (direcaoAtualPinguim == FACING_RIGHT) {
                 newX -= step;
             } else {
@@ -752,7 +748,7 @@ void keyboard(unsigned char key, int x, int y) {
         newX < (ICE_SHEET_HALF_SIZE - PENGUIN_RADIUS) &&
         newZ > (-ICE_SHEET_HALF_SIZE + PENGUIN_RADIUS) &&
         newZ < (ICE_SHEET_HALF_SIZE - PENGUIN_RADIUS)) {
-        
+            
         motherPenguinX = newX;
         motherPenguinZ = newZ;
 
@@ -806,7 +802,7 @@ int main(int argc, char *argv[]){
     initialize();
     glutDisplayFunc(draw);
     glutReshapeFunc(resizeWindow);
-    glutKeyboardFunc(keyboard);
+    glutSpecialFunc(keyboard);
 
     doFrame(0);
     glutMainLoop();
