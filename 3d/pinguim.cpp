@@ -67,7 +67,9 @@ void PosicionaObservador(void) {
     float camZ = penguimPaiZ - cameraDistance * cos(radAngle);
     float camY = cameraHeight;
     
-    gluLookAt(camX, camY, camZ, 0, 0.0, penguimPaiZ, 0.0, 1.0, 0.0);
+    gluLookAt(camX, camY, camZ, 
+        penguimFilhoX, 0.0, penguimPaiZ,
+         0.0, 1.0, 0.0);
 }
 
 // Colisão entre mãe e peixes
@@ -684,7 +686,7 @@ int main(int argc, char *argv[]){
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowPosition(5, 5);
     glutInitWindowSize(windowWidth, windowHeight);
-    glutCreateWindow("Pinguim com gluLookAt");
+    glutCreateWindow("Pinguim 3D");
 
     srand((unsigned int)time(NULL));
     Inicializa();
