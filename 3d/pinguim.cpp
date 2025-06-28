@@ -57,7 +57,7 @@ const float FISH_RADIUS = 0.8; // Raio aproximado do peixe
 
 // Variáveis do jogo tempo e pontuação
 int startTime = 0; 
-int coletados = 0;
+int collected = 0;
 int lastFedTime = 0;
 // Define as direções para onde o pinguim pode estar "olhando"
 typedef enum {
@@ -122,8 +122,7 @@ void configureObserver(void) {
 }
 
 // Colisão entre mãe e peixes
-void checkCollisions() {
-    // Se estiver apto a coletar
+void checkCollisions(){
     if (canCollectFish) {
         for (int i = 0; i < NUM_PEIXES; i++) {
             if (fishVisibleList[i]) {
@@ -132,9 +131,9 @@ void checkCollisions() {
                 float distance = sqrt(dx * dx + dz * dz);
                 
                 if (distance < (PENGUIN_RADIUS + FISH_RADIUS)) {
-                    fishVisibleList[i] = 0; // Faz o peixe desaparecer
-                    canCollectFish = 0; // Impede de coletar outros peixes
-                    coletados += 1;
+                    fishVisibleList[i] = 0;
+                    canCollectFish = 0;
+                    collected += 1;
                     hasFishInMouth = 1;
                     lastFedTime = glutGet(GLUT_ELAPSED_TIME);
                     break; // Sai do loop após coletar um peixe
@@ -154,7 +153,7 @@ void endGame(int isVictory, const char* message) {
             printf("%s\n", message);
         }
     }
-    printf("PEIXES COLETADOS: %d \n", coletados);
+    printf("PEIXES COLETADOS: %d \n", collected);
     printf("=====================\n");
     exit(0);
 }
