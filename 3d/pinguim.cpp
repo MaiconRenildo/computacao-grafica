@@ -41,6 +41,9 @@ float fishSpeeds[NUM_PEIXES] = { 0.05f, 0.07f, 0.06f, 0.04f };
 int fishDirections[NUM_PEIXES] = { -1, 1, 1, -1 }; // 1 para frente, -1 para trás
 int fishVisible[NUM_PEIXES] = { 1, 1, 1, 1 }; // 1 para visível, 0 para invisível
 
+// Variável global para controlar se pode coletar peixes
+int podeColetarPeixe = 1; // 1 = pode coletar, 0 = não pode
+
 // Posição do pinguim filho
 float penguimFilhoX = 0.0f;
 float penguimFilhoZ = 0.0f;
@@ -49,6 +52,7 @@ float penguimFilhoZ = 0.0f;
 const float ICE_SHEET_HALF_SIZE = 10.0f;
 const float PENGUIN_RADIUS = 1.0f; // Raio aproximado do pinguim
 const float FISH_RADIUS = 0.8f; // Raio aproximado do peixe
+
 
 void PosicionaObservador(void) {
     glMatrixMode(GL_MODELVIEW);
@@ -64,14 +68,19 @@ void PosicionaObservador(void) {
 
 // Colisão entre pai e peixes
 void checkCollisions() {
-    for (int i = 0; i < NUM_PEIXES; i++) {
-        if (fishVisible[i]) {
-            float dx = penguimPaiX - fishPositionsX[i];
-            float dz = penguimPaiZ - fishPositionsZ[i];
-            float distance = sqrt(dx * dx + dz * dz);
-            
-            if (distance < (PENGUIN_RADIUS + FISH_RADIUS)) {
-                fishVisible[i] = 0; // Faz o peixe desaparecer
+    // Se estiver apto a coletar
+    if (podeColetarPeixe) {
+        for (int i = 0; i < NUM_PEIXES; i++) {
+            if (fishVisible[i]) {
+                float dx = penguimPaiX - fishPositionsX[i];
+                float dz = penguimPaiZ - fishPositionsZ[i];
+                float distance = sqrt(dx * dx + dz * dz);
+                
+                if (distance < (PENGUIN_RADIUS + FISH_RADIUS)) {
+                    fishVisible[i] = 0; // Faz o peixe desaparecer
+                    podeColetarPeixe = 0; // Impede de coletar outros peixes
+                    break; // Sai do loop após coletar um peixe
+                }
             }
         }
     }
@@ -79,36 +88,22 @@ void checkCollisions() {
 
 // Colisão precisa entre pai e filho (GAMBIARRA)
 void checkPenguinCollision() {
-    // Fatores de redução para tornar a colisão mais precisa
-    const float REDUCAO_X = 0.9f;  // Reduz a área em X
-    const float REDUCAO_Z = 0.7f;  // Reduz a área em Z (mais sensível na frente/trás)
+    float dx = penguimPaiX - penguimFilhoX;
+    float dz = penguimPaiZ - penguimFilhoZ;
+    float distance = sqrt(dx * dx + dz * dz);
     
-    // Posições centrais ajustadas com os fatores de redução
-    float dx = (penguimPaiX - penguimFilhoX) * REDUCAO_X;
-    float dz = (penguimPaiZ - penguimFilhoZ) * REDUCAO_Z;
-    
-    float raioPai = 0.5f;  
-    float raioFilho = 0.3f;  
-    
-    float distancia = sqrt(dx * dx + dz * dz);
-    float somaRaios = raioPai + raioFilho;
-    
-    if (distancia < somaRaios) {
-        // Reaparecer peixe
+    if (distance < (PENGUIN_RADIUS * 2)) {
+        // Se colidir com o filho, libera para coletar peixes novamente
+        podeColetarPeixe = 1;
+        
+        // Faz o peixe desaparecido reaparecer 
         for (int i = 0; i < NUM_PEIXES; i++) {
             if (!fishVisible[i]) {
                 fishVisible[i] = 1;
-            
-                float novaPosX, novaPosZ;
-                do {
-                    novaPosX = -ICE_SHEET_HALF_SIZE + (float)rand() / RAND_MAX * (2 * ICE_SHEET_HALF_SIZE);
-                    novaPosZ = -ICE_SHEET_HALF_SIZE + (float)rand() / RAND_MAX * (2 * ICE_SHEET_HALF_SIZE);
-                } while (sqrt(pow(novaPosX - penguimPaiX, 2) + pow(novaPosZ - penguimPaiZ, 2)) < 4.0f ||
-                         sqrt(pow(novaPosX - penguimFilhoX, 2) + pow(novaPosZ - penguimFilhoZ, 2)) < 4.0f);
-                
-                fishPositionsX[i] = novaPosX;
-                fishPositionsZ[i] = novaPosZ;
+                fishPositionsX[i] = -ICE_SHEET_HALF_SIZE + (float)rand() / RAND_MAX * (2 * ICE_SHEET_HALF_SIZE);
+                fishPositionsZ[i] = -ICE_SHEET_HALF_SIZE + (float)rand() / RAND_MAX * (2 * ICE_SHEET_HALF_SIZE);
                 fishDirections[i] = (rand() % 2) ? 1 : -1;
+                break; 
             }
         }
     }
@@ -120,7 +115,6 @@ void updateFishPositions() {
         if (fishVisible[i]) {
             fishPositionsZ[i] += fishSpeeds[i] * fishDirections[i];
             
-            // Verifica os limites e inverte a direção se necessário
             if (fishPositionsZ[i] > ICE_SHEET_HALF_SIZE) {
                 fishDirections[i] = -1;
             } else if (fishPositionsZ[i] < -ICE_SHEET_HALF_SIZE) {
