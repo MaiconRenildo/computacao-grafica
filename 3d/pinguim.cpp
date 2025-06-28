@@ -115,6 +115,7 @@ void checkHoleCollisions() {
             float dx = penguimMaeX - buracoX[i];
             float dz = penguimMaeZ - buracoZ[i];
             float distance = sqrt(dx * dx + dz * dz);
+            distance = distance + (distance/2); // melhora percepção de sobreposição
             
             if (distance < (EFFECTIVE_PENGUIN_RADIUS + EFFECTIVE_HOLE_RADIUS)) {
                 printf("Você perdeu! Mãe caiu no buraco\n");
