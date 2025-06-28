@@ -179,7 +179,7 @@ void checkHoleCollisions() {
 }
 
 // Colisão mãe e filho
-void checkPenguinCollision() {
+void checkPenguinCollision(){
     const float SENSIBILITY_X = 0.4;  
     const float SENSIBILITY_Z = 0.3;  
     
@@ -188,11 +188,14 @@ void checkPenguinCollision() {
     
     const float MOTHER_EFFECTIVE_RADIUS = 0.4;
     const float BABY_EFFECTIVE_RADIUS = 0.3;
+    const float COLLISION_TOLERANCE = 0.5;
     
     float distance = sqrt(dx * dx + dz * dz);
-    float sumOfRadii = MOTHER_EFFECTIVE_RADIUS + BABY_EFFECTIVE_RADIUS;
     
-    if (distance < sumOfRadii) {
+    float sumOfRadii = MOTHER_EFFECTIVE_RADIUS + BABY_EFFECTIVE_RADIUS;
+    float adjustedSumOfRadii = sumOfRadii + COLLISION_TOLERANCE;
+    
+    if (distance < adjustedSumOfRadii) {
         canCollectFish = 1;
         hasFishInMouth = 0;
         
