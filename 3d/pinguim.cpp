@@ -62,8 +62,8 @@ void PosicionaObservador(void) {
     gluLookAt(camX, camY, camZ, 0, 0.0, penguimPaiZ, 0.0, 1.0, 0.0);
 }
 
+// Colisão entre pai e peixes
 void checkCollisions() {
-    // Verifica colisão entre pai e peixes
     for (int i = 0; i < NUM_PEIXES; i++) {
         if (fishVisible[i]) {
             float dx = penguimPaiX - fishPositionsX[i];
@@ -75,25 +75,46 @@ void checkCollisions() {
             }
         }
     }
+}
+
+// Colisão precisa entre pai e filho (GAMBIARRA)
+void checkPenguinCollision() {
+    // Fatores de redução para tornar a colisão mais precisa
+    const float REDUCAO_X = 0.9f;  // Reduz a área em X
+    const float REDUCAO_Z = 0.7f;  // Reduz a área em Z (mais sensível na frente/trás)
     
-    // Verifica colisão entre pai e filho
-    float dx = penguimPaiX - penguimFilhoX;
-    float dz = penguimPaiZ - penguimFilhoZ;
-    float distance = sqrt(dx * dx + dz * dz);
+    // Posições centrais ajustadas com os fatores de redução
+    float dx = (penguimPaiX - penguimFilhoX) * REDUCAO_X;
+    float dz = (penguimPaiZ - penguimFilhoZ) * REDUCAO_Z;
     
-    if (distance < (PENGUIN_RADIUS * 2)) {
-        // Se colidir com o filho, faz os peixes desaparecidos reaparecerem
+    float raioPai = 0.5f;  
+    float raioFilho = 0.3f;  
+    
+    float distancia = sqrt(dx * dx + dz * dz);
+    float somaRaios = raioPai + raioFilho;
+    
+    if (distancia < somaRaios) {
+        // Reaparecer peixe
         for (int i = 0; i < NUM_PEIXES; i++) {
             if (!fishVisible[i]) {
                 fishVisible[i] = 1;
-                fishPositionsX[i] = -ICE_SHEET_HALF_SIZE + (float)rand() / RAND_MAX * (2 * ICE_SHEET_HALF_SIZE);
-                fishPositionsZ[i] = -ICE_SHEET_HALF_SIZE + (float)rand() / RAND_MAX * (2 * ICE_SHEET_HALF_SIZE);
+            
+                float novaPosX, novaPosZ;
+                do {
+                    novaPosX = -ICE_SHEET_HALF_SIZE + (float)rand() / RAND_MAX * (2 * ICE_SHEET_HALF_SIZE);
+                    novaPosZ = -ICE_SHEET_HALF_SIZE + (float)rand() / RAND_MAX * (2 * ICE_SHEET_HALF_SIZE);
+                } while (sqrt(pow(novaPosX - penguimPaiX, 2) + pow(novaPosZ - penguimPaiZ, 2)) < 4.0f ||
+                         sqrt(pow(novaPosX - penguimFilhoX, 2) + pow(novaPosZ - penguimFilhoZ, 2)) < 4.0f);
+                
+                fishPositionsX[i] = novaPosX;
+                fishPositionsZ[i] = novaPosZ;
                 fishDirections[i] = (rand() % 2) ? 1 : -1;
             }
         }
     }
 }
 
+// Animação dos peixes
 void updateFishPositions() {
     for (int i = 0; i < NUM_PEIXES; i++) {
         if (fishVisible[i]) {
@@ -109,6 +130,7 @@ void updateFishPositions() {
     }
     
     checkCollisions();
+    checkPenguinCollision();
 }
 
 void doFrame(int v){
