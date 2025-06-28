@@ -87,7 +87,7 @@ void drawCone(GLdouble baseRadius, GLdouble topRadius, GLdouble height, GLint sl
 void drawPenguimBody(void);
 void drawPenguimStomach(void);
 void drawBeak(void);
-void drawMaeEyes(void);
+void drawMotherEyes(void);
 void drawPenguimHead(void);
 void drawPenguimWings(void);
 void drawPenguimFeet(void);
@@ -421,7 +421,7 @@ void drawBeak(){
 }
 
 // Desenha olhos
-void drawMaeEyes(){
+void drawMotherEyes(){
     glPushMatrix();
         glTranslatef(0, 0, -0.45);
         glColor3f(0.0, 0.0, 0.0);
@@ -465,7 +465,7 @@ void drawPenguimHead(){
             drawSphere();
         glPopMatrix();
         drawBeak();
-        drawMaeEyes();
+        drawMotherEyes();
     glPopMatrix();
 }
 
