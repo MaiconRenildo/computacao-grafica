@@ -54,6 +54,9 @@ const float ICE_SHEET_HALF_SIZE = 10.0f;
 const float PENGUIN_RADIUS = 1.0f; // Raio aproximado do pinguim
 const float FISH_RADIUS = 0.8f; // Raio aproximado do peixe
 
+// Variáveis do jogo tempo e pontuação
+int startTime = 0; 
+int coletados = 0;
 
 void PosicionaObservador(void) {
     glMatrixMode(GL_MODELVIEW);
@@ -80,6 +83,7 @@ void checkCollisions() {
                 if (distance < (PENGUIN_RADIUS + FISH_RADIUS)) {
                     fishVisible[i] = 0; // Faz o peixe desaparecer
                     podeColetarPeixe = 0; // Impede de coletar outros peixes
+                    coletados += 1;
                     break; // Sai do loop após coletar um peixe
                 }
             }
@@ -106,6 +110,7 @@ void checkHoleCollisions() {
         }
     }
 }
+
 // Colisão mãe e filho
 void checkPenguinCollision() {
     
@@ -162,6 +167,16 @@ void updateFishPositions() {
 
 void doFrame(int v){
     int currentTime = glutGet(GLUT_ELAPSED_TIME);
+    int elapsedTime = currentTime - startTime;
+    
+    // Verifica se passaram 3 minutos (180.000 ms)
+    if (elapsedTime >= 180000) {
+        printf("=====================");
+        printf("Você ganhou!!!\n");
+        printf("%d PEIXES COLETADOS  \n",coletados);
+        printf("=====================");
+        exit(0);
+    }
     
     if (currentTime - lastToggleTime > 10000) {
         showBuracos = !showBuracos;
@@ -661,6 +676,7 @@ void Inicializa(void) {
     }
     
     lastToggleTime = glutGet(GLUT_ELAPSED_TIME);
+    startTime = glutGet(GLUT_ELAPSED_TIME); // Define o tempo de início do jogo
 }
 
 int main(int argc, char *argv[]){
