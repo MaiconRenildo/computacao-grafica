@@ -119,6 +119,8 @@ void checkHoleCollisions() {
             
             if (distance < (EFFECTIVE_PENGUIN_RADIUS + EFFECTIVE_HOLE_RADIUS)) {
                 printf("Você perdeu! Mãe caiu no buraco\n");
+                printf("PEIXES COLETADOS: %d \n",coletados);
+                printf("=====================");
                 exit(0);
             }
         }
@@ -187,7 +189,7 @@ void doFrame(int v){
     if (elapsedTime >= 180000) {
         printf("=====================");
         printf("Você ganhou!!!\n");
-        printf("%d PEIXES COLETADOS  \n",coletados);
+        printf("PEIXES COLETADOS %d \n",coletados);
         printf("=====================");
         exit(0);
     }
