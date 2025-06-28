@@ -61,14 +61,14 @@ int coletados = 0;
 int lastFedTime = 0;
 // Define as direções para onde o pinguim pode estar "olhando"
 typedef enum {
-    OLHANDO_FRENTE,
-    OLHANDO_TRAS,
-    OLHANDO_ESQUERDA,
-    OLHANDO_DIREITA
-} DirecaoPinguim;
+    FACING_FORWARD,
+    FACING_BACKWARD,
+    FACING_LEFT,
+    FACING_RIGHT
+} PenguinDirection;
 
 // Variável global para armazenar a direção atual do pinguim
-DirecaoPinguim direcaoAtualPinguim = OLHANDO_FRENTE; // Começa olhando para frente
+PenguinDirection direcaoAtualPinguim = FACING_FORWARD; // Começa olhando para frente
 float penguimRotationAngle = 0.0; 
 
 // --- DECLARAÇÕES DAS FUNÇÕES ---
@@ -712,37 +712,37 @@ void keyboard(unsigned char key, int x, int y) {
     switch(key) {
         case 'w':
         case 'W':
-            if (direcaoAtualPinguim == OLHANDO_FRENTE) {
+            if (direcaoAtualPinguim == FACING_FORWARD) {
                 newZ += step;
             } else {
-                direcaoAtualPinguim = OLHANDO_FRENTE;
+                direcaoAtualPinguim = FACING_FORWARD;
                 penguimRotationAngle = 0.0;
             }
             break;
         case 's':
         case 'S':
-            if (direcaoAtualPinguim == OLHANDO_TRAS) {
+            if (direcaoAtualPinguim == FACING_BACKWARD) {
                 newZ -= step;
             } else {
-                direcaoAtualPinguim = OLHANDO_TRAS;
+                direcaoAtualPinguim = FACING_BACKWARD;
                 penguimRotationAngle = 180.0;
             }
             break;
         case 'a':
         case 'A':
-            if (direcaoAtualPinguim == OLHANDO_ESQUERDA) {
+            if (direcaoAtualPinguim == FACING_LEFT) {
                 newX += step;
             } else {
-                direcaoAtualPinguim = OLHANDO_ESQUERDA;
+                direcaoAtualPinguim = FACING_LEFT;
                 penguimRotationAngle = 90.0;
             }
             break;
         case 'd':
         case 'D':
-            if (direcaoAtualPinguim == OLHANDO_DIREITA) {
+            if (direcaoAtualPinguim == FACING_RIGHT) {
                 newX -= step;
             } else {
-                direcaoAtualPinguim = OLHANDO_DIREITA;
+                direcaoAtualPinguim = FACING_RIGHT;
                 penguimRotationAngle = -90.0;
             }
             break;
