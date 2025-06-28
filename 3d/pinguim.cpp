@@ -11,7 +11,7 @@
 #include <cstdio>
 
 // Algumas constantes
-#define NUM_BURACOS 3
+#define NUM_BURACOS 5
 #define NUM_PEIXES 4
 
 // Variáveis para os buracos
@@ -27,9 +27,9 @@ GLfloat windowWidth = 400;
 GLfloat windowHeight = 400;
 GLfloat r, g, b;
 GLint especMaterial;
-float initialPenfuimPaiX = 2.0;
-float penguimPaiX = initialPenfuimPaiX;
-float penguimPaiZ = 0.0;
+float initialPenguimMaeX = 2.0;
+float penguimMaeX = initialPenguimMaeX;
+float penguimMaeZ = 0.0;
 
 float cameraDistance = 5.0f;
 float cameraHeight = 2.0f;
@@ -63,12 +63,12 @@ void PosicionaObservador(void) {
     glLoadIdentity();
     
     float radAngle = cameraAngle * M_PI / 180.0f;
-    float camX = penguimPaiX - initialPenfuimPaiX - cameraDistance * sin(radAngle);
-    float camZ = penguimPaiZ - cameraDistance * cos(radAngle);
+    float camX = penguimMaeX - initialPenguimMaeX - cameraDistance * sin(radAngle);
+    float camZ = penguimMaeZ - cameraDistance * cos(radAngle);
     float camY = cameraHeight;
     
     gluLookAt(camX, camY, camZ, 
-        penguimFilhoX, 0.0, penguimPaiZ,
+        penguimFilhoX, 0.0, penguimMaeZ,
          0.0, 1.0, 0.0);
 }
 
@@ -78,8 +78,8 @@ void checkCollisions() {
     if (podeColetarPeixe) {
         for (int i = 0; i < NUM_PEIXES; i++) {
             if (fishVisible[i]) {
-                float dx = penguimPaiX - fishPositionsX[i];
-                float dz = penguimPaiZ - fishPositionsZ[i];
+                float dx = penguimMaeX - fishPositionsX[i];
+                float dz = penguimMaeZ - fishPositionsZ[i];
                 float distance = sqrt(dx * dx + dz * dz);
                 
                 if (distance < (PENGUIN_RADIUS + FISH_RADIUS)) {
@@ -101,8 +101,8 @@ void checkHoleCollisions() {
     
     for (int i = 0; i < NUM_BURACOS; i++) {
         if (showBuracos) {
-            float dx = penguimPaiX - buracoX[i];
-            float dz = penguimPaiZ - buracoZ[i];
+            float dx = penguimMaeX - buracoX[i];
+            float dz = penguimMaeZ - buracoZ[i];
             float distance = sqrt(dx * dx + dz * dz);
             
             if (distance < (EFFECTIVE_PENGUIN_RADIUS + EFFECTIVE_HOLE_RADIUS)) {
@@ -119,14 +119,14 @@ void checkPenguinCollision() {
     const float SENSIBILIDADE_X = 0.4f;  
     const float SENSIBILIDADE_Z = 0.3f;  
     
-    float dx = (penguimPaiX - penguimFilhoX) / SENSIBILIDADE_X;
-    float dz = (penguimPaiZ - penguimFilhoZ) / SENSIBILIDADE_Z;
+    float dx = (penguimMaeX - penguimFilhoX) / SENSIBILIDADE_X;
+    float dz = (penguimMaeZ - penguimFilhoZ) / SENSIBILIDADE_Z;
     
-    const float RAIO_EFETIVO_PAI = 0.4f;
+    const float RAIO_EFETIVO_MAE = 0.4f;
     const float RAIO_EFETIVO_FILHO = 0.3f;
     
     float distancia = sqrt(dx * dx + dz * dz);
-    float somaRaios = RAIO_EFETIVO_PAI + RAIO_EFETIVO_FILHO;
+    float somaRaios = RAIO_EFETIVO_MAE + RAIO_EFETIVO_FILHO;
     
     if (distancia < somaRaios) {
         podeColetarPeixe = 1;
@@ -139,7 +139,7 @@ void checkPenguinCollision() {
                 do {
                     fishPositionsX[i] = -ICE_SHEET_HALF_SIZE + (float)rand() / RAND_MAX * (2 * ICE_SHEET_HALF_SIZE);
                     fishPositionsZ[i] = -ICE_SHEET_HALF_SIZE + (float)rand() / RAND_MAX * (2 * ICE_SHEET_HALF_SIZE);
-                } while (sqrt(pow(fishPositionsX[i]-penguimPaiX,2) + pow(fishPositionsZ[i]-penguimPaiZ,2)) < 3.0f ||
+                } while (sqrt(pow(fishPositionsX[i]-penguimMaeX,2) + pow(fishPositionsZ[i]-penguimMaeZ,2)) < 3.0f ||
                          sqrt(pow(fishPositionsX[i]-penguimFilhoX,2) + pow(fishPositionsZ[i]-penguimFilhoZ,2)) < 3.0f);
                 
                 fishDirections[i] = (rand() % 2) ? 1 : -1;
@@ -266,12 +266,15 @@ void drawAxes() {
     glLineWidth(1.0);
 }
 
+// Desenha esfera
 void drawSphere(){
     glPushMatrix();
         glutSolidSphere(0.5, 20, 20);
     glPopMatrix();
 }
 
+
+// Desenha pirâmide
 void drawPyramid(float size, float height){
     glBegin(GL_TRIANGLES);
         float s2 = size / 2.0;
@@ -313,6 +316,7 @@ void drawPyramid(float size, float height){
     glEnd();
 }
 
+// Desenha cone
 void drawCone(GLdouble baseRadius, GLdouble topRadius, GLdouble height, GLint slices, GLint stacks) {
     GLUquadricObj *quadric = gluNewQuadric();
     gluQuadricNormals(quadric, GLU_SMOOTH);
@@ -321,6 +325,7 @@ void drawCone(GLdouble baseRadius, GLdouble topRadius, GLdouble height, GLint sl
     gluDeleteQuadric(quadric);
 }
 
+// Desenha corpo dos pinguins
 void drawPenguimBody(){
     glColor3f(0.0, 0.0, 0.0);
     glPushMatrix();
@@ -329,6 +334,7 @@ void drawPenguimBody(){
     glPopMatrix();
 }
 
+// Desenha estômago (branco)
 void drawPenguimStomach(){
     glColor3f(1.0, 1.0, 1.0);
     glPushMatrix();
@@ -338,6 +344,7 @@ void drawPenguimStomach(){
     glPopMatrix();
 }
 
+// Desenha bico
 void drawBeak(){
     glColor3f(1.0, 0.6, 0.0);
     glPushMatrix();
@@ -347,7 +354,8 @@ void drawBeak(){
     glPopMatrix();
 }
 
-void drawDadEyes(){
+// Desenha olhos
+void drawMaeEyes(){
     glPushMatrix();
         glTranslatef(0, 0, -0.45);
         glColor3f(0.0, 0.0, 0.0);
@@ -380,6 +388,7 @@ void drawDadEyes(){
     glPopMatrix();
 }
 
+// Desenha cabeça dos pinguins
 void drawPenguimHead(){
     glColor3f(0.0, 0.0, 0.0);
     glPushMatrix();
@@ -390,10 +399,11 @@ void drawPenguimHead(){
             drawSphere();
         glPopMatrix();
         drawBeak();
-        drawDadEyes();
+        drawMaeEyes();
     glPopMatrix();
 }
 
+// Desenha asas dos pinguins
 void drawPenguimWings(){
     glColor3f(0.05, 0.05, 0.05);
     glTranslatef(0, -0.3, 0.0);
@@ -413,6 +423,7 @@ void drawPenguimWings(){
     glPopMatrix();
 }
 
+// Desenha pés dos pinguins
 void drawPenguimFeet(){
     glColor3f(1.0, 0.6, 0.0);
     glPushMatrix();
@@ -427,6 +438,7 @@ void drawPenguimFeet(){
     glPopMatrix();
 }
 
+// Desenha pinguim 
 void drawPenguim(){
     glPushMatrix();
         drawPenguimHead();
@@ -437,13 +449,15 @@ void drawPenguim(){
     glPopMatrix();
 }
 
-void drawPenguimDad(){
+// Posiciona pinguim mãe
+void drawPenguimMae(){
     glPushMatrix();
-        glTranslatef(penguimPaiX, 0.65, penguimPaiZ);
+        glTranslatef(penguimMaeX, 0.65, penguimMaeZ);
         drawPenguim();
     glPopMatrix();
 }
 
+// Posiciona pinguim filho
 void drawPenguimBaby(){
     glPushMatrix();
         glTranslatef(penguimFilhoX, 0.41, penguimFilhoZ);
@@ -585,7 +599,7 @@ void Desenha(void){
     DefineIluminacao();
     drawAxes();
     drawSheetOfIce();
-    drawPenguimDad();
+    drawPenguimMae();
     drawPenguimBaby();
     drawFishes();
     glutSwapBuffers();
@@ -612,8 +626,8 @@ void Teclado(unsigned char key, int x, int y) {
     float angleStep = 5.0f;
 
     // Calcula a nova posição temporária
-    float newX = penguimPaiX;
-    float newZ = penguimPaiZ;
+    float newX = penguimMaeX;
+    float newZ = penguimMaeZ;
 
     switch(key) {
         case 'w':
@@ -640,8 +654,8 @@ void Teclado(unsigned char key, int x, int y) {
         newZ > (-ICE_SHEET_HALF_SIZE + PENGUIN_RADIUS) && 
         newZ < (ICE_SHEET_HALF_SIZE - PENGUIN_RADIUS)) {
         
-        penguimPaiX = newX;
-        penguimPaiZ = newZ;
+        penguimMaeX = newX;
+        penguimMaeZ = newZ;
         
         // Verifica colisão com buracos após o movimento
         checkHoleCollisions();
