@@ -10,50 +10,50 @@
 #include <time.h>
 #include <cstdio>
 
-// Algumas constantes
 #define NUM_BURACOS 5
 #define NUM_PEIXES 4
+#define GAME_WIN_TIME_MS 300000 // 5 minutos
+#define BABY_HUNGER_TIME_MS 60000 // 1 minuto
 
 // Variáveis para os buracos
 float buracoX[NUM_BURACOS];
 float buracoZ[NUM_BURACOS];
-float buracoRadius = 1.0f;
+float buracoRadius = 1.0;
 int lastToggleTime = 0;
-int showBuracos = 0;
+int showHoles = 0;
 
-// Variáveis câmera e iluminação
+// Variáveis de câmera e iluminação
 GLfloat angle, fAspect;
 GLfloat windowWidth = 400;
 GLfloat windowHeight = 400;
 GLfloat r, g, b;
 GLint especMaterial;
-float initialPenguimMaeX = 2.0;
-float penguimMaeX = initialPenguimMaeX;
-float penguimMaeZ = 0.0;
 
-float cameraDistance = 5.0f;
-float cameraHeight = 2.0f;
-float cameraAngle = 0.0f;
+// posições dos pinguins
+float initialMotherPenguinX = 2.0;
+float babyPenguinX = 0.0;
+float babyPenguinZ = 0.0;
+float motherPenguinZ = 0.0;
+float motherPenguinX = initialMotherPenguinX;
 
-// Variáveis para os peixes
-float fishPositionsX[NUM_PEIXES] = { -6.0f, -3.5f, 4.0f, 7.0f };
-float fishPositionsZ[NUM_PEIXES] = { -8.0f, -4.0f, 4.0f, 8.0f };
-float fishSpeeds[NUM_PEIXES] = { 0.05f, 0.07f, 0.06f, 0.04f };
-int fishDirections[NUM_PEIXES] = { -1, 1, 1, -1 }; // 1 para frente, -1 para trás
-int fishVisible[NUM_PEIXES] = { 1, 1, 1, 1 }; // 1 para visível, 0 para invisível
+float cameraAngle = 0.0;
+float cameraHeight = 2.0;
+float cameraDistance = 5.0;
 
-// Variável global para controlar se pode coletar peixes
-int podeColetarPeixe = 1; // 1 = pode coletar, 0 = não pode
-
-// Posição do pinguim filho
-float penguimFilhoX = 0.0f;
-float penguimFilhoZ = 0.0f;
+int canCollectFish = 1;
 int hasFishInMouth = 0;
 
+// Variáveis para os peixes
+float fishXPositions[NUM_PEIXES] = {-6.0f, -3.5f, 4.0f, 7.0};
+float fishZPositions[NUM_PEIXES] = {-8.0f, -4.0f, 4.0f, 8.0};
+float fishSpeedList[NUM_PEIXES] = {0.05f, 0.07f, 0.06f, 0.04};
+int fishVisibleList[NUM_PEIXES] = {1, 1, 1, 1};
+int fishDirectionsList[NUM_PEIXES] = {-1, 1, 1, -1}; // 1 para frente, -1 para trás
+
 // Limites da folha de gelo
-const float ICE_SHEET_HALF_SIZE = 10.0f;
-const float PENGUIN_RADIUS = 1.0f; // Raio aproximado do pinguim
-const float FISH_RADIUS = 0.8f; // Raio aproximado do peixe
+const float ICE_SHEET_HALF_SIZE = 10.0;
+const float PENGUIN_RADIUS = 1.0; // Raio aproximado do pinguim
+const float FISH_RADIUS = 0.8; // Raio aproximado do peixe
 
 // Variáveis do jogo tempo e pontuação
 int startTime = 0; 
@@ -69,9 +69,10 @@ typedef enum {
 
 // Variável global para armazenar a direção atual do pinguim
 DirecaoPinguim direcaoAtualPinguim = OLHANDO_FRENTE; // Começa olhando para frente
-float penguimRotationAngle = 0.0f; 
+float penguimRotationAngle = 0.0; 
 
 // --- DECLARAÇÕES DAS FUNÇÕES ---
+void endGame(int isVictory, const char* message);
 void PosicionaObservador(void);
 void checkCollisions(void);
 void checkHoleCollisions(void);
@@ -110,29 +111,29 @@ void PosicionaObservador(void) {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     
-    float radAngle = cameraAngle * M_PI / 180.0f;
-    float camX = penguimMaeX - initialPenguimMaeX - cameraDistance * sin(radAngle);
-    float camZ = penguimMaeZ - cameraDistance * cos(radAngle);
+    float radAngle = cameraAngle * M_PI / 180.0;
+    float camX = motherPenguinX - initialMotherPenguinX - cameraDistance * sin(radAngle);
+    float camZ = motherPenguinZ - cameraDistance * cos(radAngle);
     float camY = cameraHeight;
     
     gluLookAt(camX, camY, camZ, 
-        penguimFilhoX, 0.0, penguimMaeZ,
+        babyPenguinX, 0.0, motherPenguinZ,
          0.0, 1.0, 0.0);
 }
 
 // Colisão entre mãe e peixes
 void checkCollisions() {
     // Se estiver apto a coletar
-    if (podeColetarPeixe) {
+    if (canCollectFish) {
         for (int i = 0; i < NUM_PEIXES; i++) {
-            if (fishVisible[i]) {
-                float dx = penguimMaeX - fishPositionsX[i];
-                float dz = penguimMaeZ - fishPositionsZ[i];
+            if (fishVisibleList[i]) {
+                float dx = motherPenguinX - fishXPositions[i];
+                float dz = motherPenguinZ - fishZPositions[i];
                 float distance = sqrt(dx * dx + dz * dz);
                 
                 if (distance < (PENGUIN_RADIUS + FISH_RADIUS)) {
-                    fishVisible[i] = 0; // Faz o peixe desaparecer
-                    podeColetarPeixe = 0; // Impede de coletar outros peixes
+                    fishVisibleList[i] = 0; // Faz o peixe desaparecer
+                    canCollectFish = 0; // Impede de coletar outros peixes
                     coletados += 1;
                     hasFishInMouth = 1;
                     lastFedTime = glutGet(GLUT_ELAPSED_TIME);
@@ -143,24 +144,36 @@ void checkCollisions() {
     }
 }
 
+void endGame(int isVictory, const char* message) { // NOVO: Recebe 'message'
+    printf("=====================\n");
+    if (isVictory) {
+        printf("Você GANHOU!!!\n");
+    } else {
+        printf("GAME OVER!\n");
+        if (message != NULL) { // Verifica se uma mensagem foi fornecida
+            printf("%s\n", message); // Imprime a justificativa da derrota
+        }
+    }
+    printf("PEIXES COLETADOS: %d \n", coletados);
+    printf("=====================\n");
+    exit(0);
+}
+
 // Colisão mãe e buraco
 void checkHoleCollisions() {
-    const float COLLISION_SENSITIVITY = 0.8f; 
+    const float COLLISION_SENSITIVITY = 0.8; 
     const float EFFECTIVE_PENGUIN_RADIUS = PENGUIN_RADIUS * COLLISION_SENSITIVITY;
     const float EFFECTIVE_HOLE_RADIUS = buracoRadius * COLLISION_SENSITIVITY;
     
     for (int i = 0; i < NUM_BURACOS; i++) {
-        if (showBuracos) {
-            float dx = penguimMaeX - buracoX[i];
-            float dz = penguimMaeZ - buracoZ[i];
+        if (showHoles) {
+            float dx = motherPenguinX - buracoX[i];
+            float dz = motherPenguinZ - buracoZ[i];
             float distance = sqrt(dx * dx + dz * dz);
             distance = distance + (distance/2); // melhora percepção de sobreposição
             
             if (distance < (EFFECTIVE_PENGUIN_RADIUS + EFFECTIVE_HOLE_RADIUS)) {
-                printf("Você perdeu! Mãe caiu no buraco\n");
-                printf("PEIXES COLETADOS: %d \n",coletados);
-                printf("=====================");
-                exit(0);
+                endGame(false, "Mãe caiu no buraco");
             }
         }
     }
@@ -168,35 +181,34 @@ void checkHoleCollisions() {
 
 // Colisão mãe e filho
 void checkPenguinCollision() {
+    const float SENSIBILITY_X = 0.4;  
+    const float SENSIBILITY_Z = 0.3;  
     
-    const float SENSIBILIDADE_X = 0.4f;  
-    const float SENSIBILIDADE_Z = 0.3f;  
+    float dx = (motherPenguinX - babyPenguinX) / SENSIBILITY_X;
+    float dz = (motherPenguinZ - babyPenguinZ) / SENSIBILITY_Z;
     
-    float dx = (penguimMaeX - penguimFilhoX) / SENSIBILIDADE_X;
-    float dz = (penguimMaeZ - penguimFilhoZ) / SENSIBILIDADE_Z;
+    const float MOTHER_EFFECTIVE_RADIUS = 0.4;
+    const float BABY_EFFECTIVE_RADIUS = 0.3;
     
-    const float RAIO_EFETIVO_MAE = 0.4f;
-    const float RAIO_EFETIVO_FILHO = 0.3f;
+    float distance = sqrt(dx * dx + dz * dz);
+    float sumOfRadii = MOTHER_EFFECTIVE_RADIUS + BABY_EFFECTIVE_RADIUS;
     
-    float distancia = sqrt(dx * dx + dz * dz);
-    float somaRaios = RAIO_EFETIVO_MAE + RAIO_EFETIVO_FILHO;
-    
-    if (distancia < somaRaios) {
-        podeColetarPeixe = 1;
+    if (distance < sumOfRadii) {
+        canCollectFish = 1;
         hasFishInMouth = 0;
         
         // Reaparece apenas um peixe por colisão
         for (int i = 0; i < NUM_PEIXES; i++) {
-            if (!fishVisible[i]) {
-                fishVisible[i] = 1;
+            if (!fishVisibleList[i]) {
+                fishVisibleList[i] = 1;
                 // Posiciona o peixe 
                 do {
-                    fishPositionsX[i] = -ICE_SHEET_HALF_SIZE + (float)rand() / RAND_MAX * (2 * ICE_SHEET_HALF_SIZE);
-                    fishPositionsZ[i] = -ICE_SHEET_HALF_SIZE + (float)rand() / RAND_MAX * (2 * ICE_SHEET_HALF_SIZE);
-                } while (sqrt(pow(fishPositionsX[i]-penguimMaeX,2) + pow(fishPositionsZ[i]-penguimMaeZ,2)) < 3.0f ||
-                         sqrt(pow(fishPositionsX[i]-penguimFilhoX,2) + pow(fishPositionsZ[i]-penguimFilhoZ,2)) < 3.0f);
+                    fishXPositions[i] = -ICE_SHEET_HALF_SIZE + (float)rand() / RAND_MAX * (2 * ICE_SHEET_HALF_SIZE);
+                    fishZPositions[i] = -ICE_SHEET_HALF_SIZE + (float)rand() / RAND_MAX * (2 * ICE_SHEET_HALF_SIZE);
+                } while (sqrt(pow(fishXPositions[i]-motherPenguinX,2) + pow(fishZPositions[i]-motherPenguinZ,2)) < 3.0f ||
+                         sqrt(pow(fishXPositions[i]-babyPenguinX,2) + pow(fishZPositions[i]-babyPenguinZ,2)) < 3.0f);
                 
-                fishDirections[i] = (rand() % 2) ? 1 : -1;
+                fishDirectionsList[i] = (rand() % 2) ? 1 : -1;
                 break;
             }
         }
@@ -206,13 +218,13 @@ void checkPenguinCollision() {
 // Animação dos peixes
 void updateFishPositions() {
     for (int i = 0; i < NUM_PEIXES; i++) {
-        if (fishVisible[i]) {
-            fishPositionsZ[i] += fishSpeeds[i] * fishDirections[i];
+        if (fishVisibleList[i]) {
+            fishZPositions[i] += fishSpeedList[i] * fishDirectionsList[i];
             
-            if (fishPositionsZ[i] > ICE_SHEET_HALF_SIZE) {
-                fishDirections[i] = -1;
-            } else if (fishPositionsZ[i] < -ICE_SHEET_HALF_SIZE) {
-                fishDirections[i] = 1;
+            if (fishZPositions[i] > ICE_SHEET_HALF_SIZE) {
+                fishDirectionsList[i] = -1;
+            } else if (fishZPositions[i] < -ICE_SHEET_HALF_SIZE) {
+                fishDirectionsList[i] = 1;
             }
         }
     }
@@ -226,28 +238,19 @@ void doFrame(int v){
     int elapsedTime = currentTime - startTime;
     int timeSinceLastFed = currentTime - lastFedTime;
     
-    // Verifica se passaram 3 minutos (180.000 ms)
-    if (elapsedTime >= 180000) {
-        printf("=====================");
-        printf("Você ganhou!!!\n");
-        printf("PEIXES COLETADOS: %d \n",coletados);
-        printf("=====================");
-        exit(0);
+    if (elapsedTime >= GAME_WIN_TIME_MS) {
+        endGame(true, "");
     }
 
-    if (timeSinceLastFed >= 60000) {
-        printf("=====================\n");
-        printf("Você perdeu! O pinguim filhote ficou com fome por muito tempo.\n");
-        printf("PEIXES COLETADOS: %d\n", coletados);
-        printf("=====================\n");
-        exit(0);
+    if (timeSinceLastFed >= BABY_HUNGER_TIME_MS) {
+        endGame(false, "O pinguim filhote ficou com fome por muito tempo.");
     }
     
     if (currentTime - lastToggleTime > 10000) {
-        showBuracos = !showBuracos;
-        if (showBuracos) {
-            float minX = -9.0f, maxX = 9.0f;
-            float minZ = -9.0f, maxZ = 9.0f;
+        showHoles = !showHoles;
+        if (showHoles) {
+            float minX = -9.0f, maxX = 9.0;
+            float minZ = -9.0f, maxZ = 9.0;
             
             for (int i = 0; i < NUM_BURACOS; i++) {
                 buracoX[i] = minX + (float)rand() / RAND_MAX * (maxX - minX);
@@ -516,7 +519,7 @@ void drawPenguim(){
 // Posiciona pinguim filho
 void drawPenguimBaby(){
     glPushMatrix();
-        glTranslatef(penguimFilhoX, 0.41, penguimFilhoZ);
+        glTranslatef(babyPenguinX, 0.41, babyPenguinZ);
         glRotatef(180, 0.0f, 1.0f, 0.0f); 
         glScalef(0.8, 0.6, 0.8);
         drawPenguim();
@@ -613,7 +616,7 @@ void drawFishAtPosition(float x, float z, int direction) {
 // Posiciona pinguim mãe
 void drawPenguimMae(){
     glPushMatrix();
-        glTranslatef(penguimMaeX, 0.65, penguimMaeZ);
+        glTranslatef(motherPenguinX, 0.65, motherPenguinZ);
         glRotatef(penguimRotationAngle, 0.0f, 1.0f, 0.0f); // Rotação no eixo Y
         drawPenguim();
         if (hasFishInMouth) {
@@ -631,8 +634,8 @@ void drawPenguimMae(){
 
 void drawFishes() {
     for (int i = 0; i < NUM_PEIXES; i++) {
-        if (fishVisible[i]) {
-            drawFishAtPosition(fishPositionsX[i], fishPositionsZ[i], fishDirections[i]);
+        if (fishVisibleList[i]) {
+            drawFishAtPosition(fishXPositions[i], fishZPositions[i], fishDirectionsList[i]);
         }
     }
 }
@@ -664,7 +667,7 @@ void drawSheetOfIce() {
     glPopMatrix();
 
     // Buracos 
-    if (showBuracos) {
+    if (showHoles) {
         for (int i = 0; i < NUM_BURACOS; i++) {
             drawBuraco(buracoX[i], 0.1f, buracoZ[i], buracoRadius);
         }
@@ -699,48 +702,48 @@ void AlteraTamanhoJanela(GLsizei w, GLsizei h){
 }
 
 void Teclado(unsigned char key, int x, int y) {
-    float step = 0.3f;
-    float angleStep = 5.0f;
+    float step = 0.3;
+    float angleStep = 5.0;
 
     // Calcula a nova posição temporária
-    float newX = penguimMaeX;
-    float newZ = penguimMaeZ;
+    float newX = motherPenguinX;
+    float newZ = motherPenguinZ;
 
     switch(key) {
         case 'w':
         case 'W':
             if (direcaoAtualPinguim == OLHANDO_FRENTE) {
-                newZ += step; // Anda para frente
+                newZ += step;
             } else {
-                direcaoAtualPinguim = OLHANDO_FRENTE; // Muda a direção para frente
-                penguimRotationAngle = 0.0f; // Reseta a rotação
+                direcaoAtualPinguim = OLHANDO_FRENTE;
+                penguimRotationAngle = 0.0;
             }
             break;
         case 's':
         case 'S':
             if (direcaoAtualPinguim == OLHANDO_TRAS) {
-                newZ -= step; // Anda para trás
+                newZ -= step;
             } else {
-                direcaoAtualPinguim = OLHANDO_TRAS; // Muda a direção para trás
-                penguimRotationAngle = 180.0f; // Rotaciona 180 graus
+                direcaoAtualPinguim = OLHANDO_TRAS;
+                penguimRotationAngle = 180.0;
             }
             break;
         case 'a':
         case 'A':
             if (direcaoAtualPinguim == OLHANDO_ESQUERDA) {
-                newX += step; // Anda para a "esquerda" (no seu sistema de coordenadas X positivo é esquerdo)
+                newX += step;
             } else {
-                direcaoAtualPinguim = OLHANDO_ESQUERDA; // Muda a direção para esquerda
-                penguimRotationAngle = 90.0f; // Rotaciona 90 graus
+                direcaoAtualPinguim = OLHANDO_ESQUERDA;
+                penguimRotationAngle = 90.0;
             }
             break;
         case 'd':
         case 'D':
             if (direcaoAtualPinguim == OLHANDO_DIREITA) {
-                newX -= step; // Anda para a "direita" (no seu sistema de coordenadas X negativo é direito)
+                newX -= step;
             } else {
-                direcaoAtualPinguim = OLHANDO_DIREITA; // Muda a direção para direita
-                penguimRotationAngle = -90.0f; // Rotaciona -90 graus
+                direcaoAtualPinguim = OLHANDO_DIREITA;
+                penguimRotationAngle = -90.0;
             }
             break;
     }
@@ -751,8 +754,8 @@ void Teclado(unsigned char key, int x, int y) {
         newZ > (-ICE_SHEET_HALF_SIZE + PENGUIN_RADIUS) &&
         newZ < (ICE_SHEET_HALF_SIZE - PENGUIN_RADIUS)) {
         
-        penguimMaeX = newX;
-        penguimMaeZ = newZ;
+        motherPenguinX = newX;
+        motherPenguinZ = newZ;
 
         // Verifica colisão com buracos após o movimento
         checkHoleCollisions();
@@ -762,9 +765,9 @@ void Teclado(unsigned char key, int x, int y) {
 }
 
 void Inicializa(void) {
-    r = 1.0f;
-    g = 1.0f;
-    b = 1.0f;
+    r = 1.0;
+    g = 1.0;
+    b = 1.0;
     especMaterial = 60;
 
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -776,12 +779,12 @@ void Inicializa(void) {
     
     angle = 50;
     
-    cameraDistance = 20.0f;
-    cameraHeight = 10.0f;
-    cameraAngle = 0.0f;
+    cameraDistance = 20.0;
+    cameraHeight = 10.0;
+    cameraAngle = 0.0;
     
-    float minX = -9.0f, maxX = 9.0f;
-    float minZ = -9.0f, maxZ = 9.0f;
+    float minX = -9.0f, maxX = 9.0;
+    float minZ = -9.0f, maxZ = 9.0;
     
     for (int i = 0; i < NUM_BURACOS; i++) {
         buracoX[i] = minX + (float)rand() / RAND_MAX * (maxX - minX);
