@@ -39,10 +39,16 @@ float fishPositionsX[NUM_PEIXES] = { -6.0f, -3.5f, 4.0f, 7.0f };
 float fishPositionsZ[NUM_PEIXES] = { -8.0f, -4.0f, 4.0f, 8.0f };
 float fishSpeeds[NUM_PEIXES] = { 0.05f, 0.07f, 0.06f, 0.04f };
 int fishDirections[NUM_PEIXES] = { -1, 1, 1, -1 }; // 1 para frente, -1 para trás
+int fishVisible[NUM_PEIXES] = { 1, 1, 1, 1 }; // 1 para visível, 0 para invisível
+
+// Posição do pinguim filho
+float penguimFilhoX = 0.0f;
+float penguimFilhoZ = 0.0f;
 
 // Limites da folha de gelo
 const float ICE_SHEET_HALF_SIZE = 10.0f;
 const float PENGUIN_RADIUS = 1.0f; // Raio aproximado do pinguim
+const float FISH_RADIUS = 0.8f; // Raio aproximado do peixe
 
 void PosicionaObservador(void) {
     glMatrixMode(GL_MODELVIEW);
@@ -56,17 +62,53 @@ void PosicionaObservador(void) {
     gluLookAt(camX, camY, camZ, 0, 0.0, penguimPaiZ, 0.0, 1.0, 0.0);
 }
 
-void updateFishPositions() {
+void checkCollisions() {
+    // Verifica colisão entre pai e peixes
     for (int i = 0; i < NUM_PEIXES; i++) {
-        fishPositionsZ[i] += fishSpeeds[i] * fishDirections[i];
-        
-        // Verifica os limites e inverte a direção se necessário
-        if (fishPositionsZ[i] > ICE_SHEET_HALF_SIZE) {
-            fishDirections[i] = -1;
-        } else if (fishPositionsZ[i] < -ICE_SHEET_HALF_SIZE) {
-            fishDirections[i] = 1;
+        if (fishVisible[i]) {
+            float dx = penguimPaiX - fishPositionsX[i];
+            float dz = penguimPaiZ - fishPositionsZ[i];
+            float distance = sqrt(dx * dx + dz * dz);
+            
+            if (distance < (PENGUIN_RADIUS + FISH_RADIUS)) {
+                fishVisible[i] = 0; // Faz o peixe desaparecer
+            }
         }
     }
+    
+    // Verifica colisão entre pai e filho
+    float dx = penguimPaiX - penguimFilhoX;
+    float dz = penguimPaiZ - penguimFilhoZ;
+    float distance = sqrt(dx * dx + dz * dz);
+    
+    if (distance < (PENGUIN_RADIUS * 2)) {
+        // Se colidir com o filho, faz os peixes desaparecidos reaparecerem
+        for (int i = 0; i < NUM_PEIXES; i++) {
+            if (!fishVisible[i]) {
+                fishVisible[i] = 1;
+                fishPositionsX[i] = -ICE_SHEET_HALF_SIZE + (float)rand() / RAND_MAX * (2 * ICE_SHEET_HALF_SIZE);
+                fishPositionsZ[i] = -ICE_SHEET_HALF_SIZE + (float)rand() / RAND_MAX * (2 * ICE_SHEET_HALF_SIZE);
+                fishDirections[i] = (rand() % 2) ? 1 : -1;
+            }
+        }
+    }
+}
+
+void updateFishPositions() {
+    for (int i = 0; i < NUM_PEIXES; i++) {
+        if (fishVisible[i]) {
+            fishPositionsZ[i] += fishSpeeds[i] * fishDirections[i];
+            
+            // Verifica os limites e inverte a direção se necessário
+            if (fishPositionsZ[i] > ICE_SHEET_HALF_SIZE) {
+                fishDirections[i] = -1;
+            } else if (fishPositionsZ[i] < -ICE_SHEET_HALF_SIZE) {
+                fishDirections[i] = 1;
+            }
+        }
+    }
+    
+    checkCollisions();
 }
 
 void doFrame(int v){
@@ -337,7 +379,7 @@ void drawPenguimDad(){
 
 void drawPenguimBaby(){
     glPushMatrix();
-        glTranslatef(0.0, 0.41, 0.0);
+        glTranslatef(penguimFilhoX, 0.41, penguimFilhoZ);
         glScalef(0.8, 0.6, 0.8);
         drawPenguim();
     glPopMatrix();
@@ -430,9 +472,10 @@ void drawFishAtPosition(float x, float z, int direction) {
 }
 
 void drawFishes() {
-    //2.0f + i * 1.5f,
     for (int i = 0; i < NUM_PEIXES; i++) {
-        drawFishAtPosition(fishPositionsX[i], fishPositionsZ[i], fishDirections[i]);
+        if (fishVisible[i]) {
+            drawFishAtPosition(fishPositionsX[i], fishPositionsZ[i], fishDirections[i]);
+        }
     }
 }
 
