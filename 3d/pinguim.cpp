@@ -57,6 +57,7 @@ const float FISH_RADIUS = 0.8f; // Raio aproximado do peixe
 // Variáveis do jogo tempo e pontuação
 int startTime = 0; 
 int coletados = 0;
+int lastFedTime = 0;
 // Define as direções para onde o pinguim pode estar "olhando"
 typedef enum {
     OLHANDO_FRENTE,
@@ -97,6 +98,7 @@ void checkCollisions() {
                     fishVisible[i] = 0; // Faz o peixe desaparecer
                     podeColetarPeixe = 0; // Impede de coletar outros peixes
                     coletados += 1;
+                    lastFedTime = glutGet(GLUT_ELAPSED_TIME);
                     break; // Sai do loop após coletar um peixe
                 }
             }
@@ -184,13 +186,22 @@ void updateFishPositions() {
 void doFrame(int v){
     int currentTime = glutGet(GLUT_ELAPSED_TIME);
     int elapsedTime = currentTime - startTime;
+    int timeSinceLastFed = currentTime - lastFedTime;
     
     // Verifica se passaram 3 minutos (180.000 ms)
     if (elapsedTime >= 180000) {
         printf("=====================");
         printf("Você ganhou!!!\n");
-        printf("PEIXES COLETADOS %d \n",coletados);
+        printf("PEIXES COLETADOS: %d \n",coletados);
         printf("=====================");
+        exit(0);
+    }
+
+    if (timeSinceLastFed >= 60000) {
+        printf("=====================\n");
+        printf("Você perdeu! O pinguim filhote ficou com fome por muito tempo.\n");
+        printf("PEIXES COLETADOS: %d\n", coletados);
+        printf("=====================\n");
         exit(0);
     }
     
@@ -729,6 +740,7 @@ void Inicializa(void) {
     
     lastToggleTime = glutGet(GLUT_ELAPSED_TIME);
     startTime = glutGet(GLUT_ELAPSED_TIME); // Define o tempo de início do jogo
+    lastFedTime = glutGet(GLUT_ELAPSED_TIME);
 }
 
 int main(int argc, char *argv[]){
