@@ -144,14 +144,14 @@ void checkCollisions() {
     }
 }
 
-void endGame(int isVictory, const char* message) { // NOVO: Recebe 'message'
+void endGame(int isVictory, const char* message) {
     printf("=====================\n");
-    if (isVictory) {
+    if(isVictory){
         printf("Você GANHOU!!!\n");
     } else {
         printf("GAME OVER!\n");
-        if (message != NULL) { // Verifica se uma mensagem foi fornecida
-            printf("%s\n", message); // Imprime a justificativa da derrota
+        if(message != NULL){
+            printf("%s\n", message);
         }
     }
     printf("PEIXES COLETADOS: %d \n", coletados);
