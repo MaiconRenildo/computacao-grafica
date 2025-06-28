@@ -48,6 +48,7 @@ int podeColetarPeixe = 1; // 1 = pode coletar, 0 = não pode
 // Posição do pinguim filho
 float penguimFilhoX = 0.0f;
 float penguimFilhoZ = 0.0f;
+int hasFishInMouth = 0;
 
 // Limites da folha de gelo
 const float ICE_SHEET_HALF_SIZE = 10.0f;
@@ -98,6 +99,7 @@ void checkCollisions() {
                     fishVisible[i] = 0; // Faz o peixe desaparecer
                     podeColetarPeixe = 0; // Impede de coletar outros peixes
                     coletados += 1;
+                    hasFishInMouth = 1;
                     lastFedTime = glutGet(GLUT_ELAPSED_TIME);
                     break; // Sai do loop após coletar um peixe
                 }
@@ -146,6 +148,7 @@ void checkPenguinCollision() {
     
     if (distancia < somaRaios) {
         podeColetarPeixe = 1;
+        hasFishInMouth = 0;
         
         // Reaparece apenas um peixe por colisão
         for (int i = 0; i < NUM_PEIXES; i++) {
@@ -474,14 +477,6 @@ void drawPenguim(){
     glPopMatrix();
 }
 
-// Posiciona pinguim mãe
-void drawPenguimMae(){
-    glPushMatrix();
-        glTranslatef(penguimMaeX, 0.65, penguimMaeZ);
-        glRotatef(penguimRotationAngle, 0.0f, 1.0f, 0.0f); // Rotação no eixo Y
-        drawPenguim();
-    glPopMatrix();
-}
 
 // Posiciona pinguim filho
 void drawPenguimBaby(){
@@ -576,6 +571,26 @@ void drawFishAtPosition(float x, float z, int direction) {
             glScalef(0.1, 0.1, 0.2);
             drawSphere();
         glPopMatrix();
+    glPopMatrix();
+}
+
+
+// Posiciona pinguim mãe
+void drawPenguimMae(){
+    glPushMatrix();
+        glTranslatef(penguimMaeX, 0.65, penguimMaeZ);
+        glRotatef(penguimRotationAngle, 0.0f, 1.0f, 0.0f); // Rotação no eixo Y
+        drawPenguim();
+        if (hasFishInMouth) {
+            glPushMatrix();
+                glTranslatef(0.0f, 0.5f, 0.7f);
+                glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+                glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
+
+                glScalef(0.40f, 0.40f, 0.40f);
+                drawFishAtPosition(0.0f, 0.0f, 1);
+            glPopMatrix();
+        }
     glPopMatrix();
 }
 
