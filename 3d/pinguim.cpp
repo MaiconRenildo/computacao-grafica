@@ -19,7 +19,7 @@ float buracoX[NUM_BURACOS];
 float buracoZ[NUM_BURACOS];
 float buracoRadius = 1.0f;
 int lastToggleTime = 0;
-int showBuracos = 1;
+int showBuracos = 0;
 
 // Variáveis câmera e iluminação
 GLfloat angle, fAspect;
