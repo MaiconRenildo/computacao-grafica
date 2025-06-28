@@ -94,7 +94,7 @@ void drawPenguimFeet(void);
 void drawPenguim(void);
 void drawPenguimBaby(void);
 void drawFishAtPosition(float x, float z, int direction);
-void drawPenguimMae(void);
+void drawPenguimMother(void);
 void drawFishes(void);
 void drawHole(float x, float y, float z, float radius);
 void drawSheetOfIce(void);
@@ -613,7 +613,7 @@ void drawFishAtPosition(float x, float z, int direction) {
 
 
 // Posiciona pinguim mãe
-void drawPenguimMae(){
+void drawPenguimMother(){
     glPushMatrix();
         glTranslatef(motherPenguinX, 0.65, motherPenguinZ);
         glRotatef(penguimRotationAngle, 0.0f, 1.0f, 0.0f); // Rotação no eixo Y
@@ -678,7 +678,7 @@ void draw(void){
     defineLighting();
     drawAxes();
     drawSheetOfIce();
-    drawPenguimMae();   
+    drawPenguimMother();   
     drawPenguimBaby();
     drawFishes();
     glutSwapBuffers();
