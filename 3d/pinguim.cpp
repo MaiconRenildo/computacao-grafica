@@ -644,7 +644,7 @@ void drawFishes() {
 
 void drawHole(float x, float y, float z, float radius) {
     int numSegments = 50;
-    glColor3f(0.0f, 0.0f, 0.0f);
+    glColor3f(0.5f, 0.7f, 0.9f);
 
     glPushMatrix();
         glTranslatef(x, y, z);
