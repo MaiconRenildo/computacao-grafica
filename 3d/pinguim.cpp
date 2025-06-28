@@ -71,6 +71,41 @@ typedef enum {
 DirecaoPinguim direcaoAtualPinguim = OLHANDO_FRENTE; // Começa olhando para frente
 float penguimRotationAngle = 0.0f; 
 
+// --- DECLARAÇÕES DAS FUNÇÕES ---
+void PosicionaObservador(void);
+void checkCollisions(void);
+void checkHoleCollisions(void);
+void checkPenguinCollision(void);
+void updateFishPositions(void);
+void doFrame(int v);
+void DefineIluminacao(void);
+void drawAxes(void);
+void drawSphere(void);
+void drawPyramid(float size, float height);
+void drawCone(GLdouble baseRadius, GLdouble topRadius, GLdouble height, GLint slices, GLint stacks);
+void drawPenguimBody(void);
+void drawPenguimStomach(void);
+void drawBeak(void);
+void drawMaeEyes(void);
+void drawPenguimHead(void);
+void drawPenguimWings(void);
+void drawPenguimFeet(void);
+void drawPenguim(void);
+void drawPenguimBaby(void);
+void drawFishAtPosition(float x, float z, int direction);
+void drawPenguimMae(void);
+void drawFishes(void);
+void drawBuraco(float x, float y, float z, float radius);
+void drawSheetOfIce(void);
+void Desenha(void);
+void EspecificaParametrosVisualizacao(void);
+void AlteraTamanhoJanela(GLsizei w, GLsizei h);
+void Teclado(unsigned char key, int x, int y);
+void Inicializa(void);
+// --- FIM DAS DECLARAÇÕES ---
+
+
+
 void PosicionaObservador(void) {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
