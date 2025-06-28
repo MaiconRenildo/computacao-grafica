@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <cstdio>
 
 // Algumas constantes
 #define NUM_BURACOS 3
@@ -66,7 +67,7 @@ void PosicionaObservador(void) {
     gluLookAt(camX, camY, camZ, 0, 0.0, penguimPaiZ, 0.0, 1.0, 0.0);
 }
 
-// Colisão entre pai e peixes
+// Colisão entre mãe e peixes
 void checkCollisions() {
     // Se estiver apto a coletar
     if (podeColetarPeixe) {
@@ -86,24 +87,56 @@ void checkCollisions() {
     }
 }
 
-// Colisão precisa entre pai e filho (GAMBIARRA)
-void checkPenguinCollision() {
-    float dx = penguimPaiX - penguimFilhoX;
-    float dz = penguimPaiZ - penguimFilhoZ;
-    float distance = sqrt(dx * dx + dz * dz);
+// Colisão mãe e buraco
+void checkHoleCollisions() {
+    const float COLLISION_SENSITIVITY = 0.8f; 
+    const float EFFECTIVE_PENGUIN_RADIUS = PENGUIN_RADIUS * COLLISION_SENSITIVITY;
+    const float EFFECTIVE_HOLE_RADIUS = buracoRadius * COLLISION_SENSITIVITY;
     
-    if (distance < (PENGUIN_RADIUS * 2)) {
-        // Se colidir com o filho, libera para coletar peixes novamente
+    for (int i = 0; i < NUM_BURACOS; i++) {
+        if (showBuracos) {
+            float dx = penguimPaiX - buracoX[i];
+            float dz = penguimPaiZ - buracoZ[i];
+            float distance = sqrt(dx * dx + dz * dz);
+            
+            if (distance < (EFFECTIVE_PENGUIN_RADIUS + EFFECTIVE_HOLE_RADIUS)) {
+                printf("Você perdeu! Mãe caiu no buraco\n");
+                exit(0);
+            }
+        }
+    }
+}
+// Colisão mãe e filho
+void checkPenguinCollision() {
+    
+    const float SENSIBILIDADE_X = 0.4f;  
+    const float SENSIBILIDADE_Z = 0.3f;  
+    
+    float dx = (penguimPaiX - penguimFilhoX) / SENSIBILIDADE_X;
+    float dz = (penguimPaiZ - penguimFilhoZ) / SENSIBILIDADE_Z;
+    
+    const float RAIO_EFETIVO_PAI = 0.4f;
+    const float RAIO_EFETIVO_FILHO = 0.3f;
+    
+    float distancia = sqrt(dx * dx + dz * dz);
+    float somaRaios = RAIO_EFETIVO_PAI + RAIO_EFETIVO_FILHO;
+    
+    if (distancia < somaRaios) {
         podeColetarPeixe = 1;
         
-        // Faz o peixe desaparecido reaparecer 
+        // Reaparece apenas um peixe por colisão
         for (int i = 0; i < NUM_PEIXES; i++) {
             if (!fishVisible[i]) {
                 fishVisible[i] = 1;
-                fishPositionsX[i] = -ICE_SHEET_HALF_SIZE + (float)rand() / RAND_MAX * (2 * ICE_SHEET_HALF_SIZE);
-                fishPositionsZ[i] = -ICE_SHEET_HALF_SIZE + (float)rand() / RAND_MAX * (2 * ICE_SHEET_HALF_SIZE);
+                // Posiciona o peixe 
+                do {
+                    fishPositionsX[i] = -ICE_SHEET_HALF_SIZE + (float)rand() / RAND_MAX * (2 * ICE_SHEET_HALF_SIZE);
+                    fishPositionsZ[i] = -ICE_SHEET_HALF_SIZE + (float)rand() / RAND_MAX * (2 * ICE_SHEET_HALF_SIZE);
+                } while (sqrt(pow(fishPositionsX[i]-penguimPaiX,2) + pow(fishPositionsZ[i]-penguimPaiZ,2)) < 3.0f ||
+                         sqrt(pow(fishPositionsX[i]-penguimFilhoX,2) + pow(fishPositionsZ[i]-penguimFilhoZ,2)) < 3.0f);
+                
                 fishDirections[i] = (rand() % 2) ? 1 : -1;
-                break; 
+                break;
             }
         }
     }
@@ -145,6 +178,7 @@ void doFrame(int v){
     }
     
     updateFishPositions();
+    checkHoleCollisions();  
     glutPostRedisplay();
     glutTimerFunc(12, doFrame, 0);
 }
@@ -557,7 +591,7 @@ void AlteraTamanhoJanela(GLsizei w, GLsizei h){
 }
 
 void Teclado(unsigned char key, int x, int y) {
-    float step = 0.1f;
+    float step = 0.3f;
     float angleStep = 5.0f;
 
     // Calcula a nova posição temporária
@@ -583,7 +617,7 @@ void Teclado(unsigned char key, int x, int y) {
             break;
     }
 
-    // Verifica se a nova posição está dentro dos limites da folha de gelo
+    // Não deixa mãe andar fora do gelo
     if (newX > (-ICE_SHEET_HALF_SIZE + PENGUIN_RADIUS) && 
         newX < (ICE_SHEET_HALF_SIZE - PENGUIN_RADIUS) &&
         newZ > (-ICE_SHEET_HALF_SIZE + PENGUIN_RADIUS) && 
@@ -591,6 +625,9 @@ void Teclado(unsigned char key, int x, int y) {
         
         penguimPaiX = newX;
         penguimPaiZ = newZ;
+        
+        // Verifica colisão com buracos após o movimento
+        checkHoleCollisions();
     }
 
     glutPostRedisplay();
