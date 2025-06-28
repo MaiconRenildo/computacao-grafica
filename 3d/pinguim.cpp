@@ -57,6 +57,17 @@ const float FISH_RADIUS = 0.8f; // Raio aproximado do peixe
 // Variáveis do jogo tempo e pontuação
 int startTime = 0; 
 int coletados = 0;
+// Define as direções para onde o pinguim pode estar "olhando"
+typedef enum {
+    OLHANDO_FRENTE,
+    OLHANDO_TRAS,
+    OLHANDO_ESQUERDA,
+    OLHANDO_DIREITA
+} DirecaoPinguim;
+
+// Variável global para armazenar a direção atual do pinguim
+DirecaoPinguim direcaoAtualPinguim = OLHANDO_FRENTE; // Começa olhando para frente
+float penguimRotationAngle = 0.0f; 
 
 void PosicionaObservador(void) {
     glMatrixMode(GL_MODELVIEW);
@@ -453,6 +464,7 @@ void drawPenguim(){
 void drawPenguimMae(){
     glPushMatrix();
         glTranslatef(penguimMaeX, 0.65, penguimMaeZ);
+        glRotatef(penguimRotationAngle, 0.0f, 1.0f, 0.0f); // Rotação no eixo Y
         drawPenguim();
     glPopMatrix();
 }
@@ -461,6 +473,7 @@ void drawPenguimMae(){
 void drawPenguimBaby(){
     glPushMatrix();
         glTranslatef(penguimFilhoX, 0.41, penguimFilhoZ);
+        glRotatef(180, 0.0f, 1.0f, 0.0f); 
         glScalef(0.8, 0.6, 0.8);
         drawPenguim();
     glPopMatrix();
@@ -599,7 +612,7 @@ void Desenha(void){
     DefineIluminacao();
     drawAxes();
     drawSheetOfIce();
-    drawPenguimMae();
+    drawPenguimMae();   
     drawPenguimBaby();
     drawFishes();
     glutSwapBuffers();
@@ -632,31 +645,51 @@ void Teclado(unsigned char key, int x, int y) {
     switch(key) {
         case 'w':
         case 'W':
-            newZ += step;
+            if (direcaoAtualPinguim == OLHANDO_FRENTE) {
+                newZ += step; // Anda para frente
+            } else {
+                direcaoAtualPinguim = OLHANDO_FRENTE; // Muda a direção para frente
+                penguimRotationAngle = 0.0f; // Reseta a rotação
+            }
             break;
         case 's':
         case 'S':
-            newZ -= step;
+            if (direcaoAtualPinguim == OLHANDO_TRAS) {
+                newZ -= step; // Anda para trás
+            } else {
+                direcaoAtualPinguim = OLHANDO_TRAS; // Muda a direção para trás
+                penguimRotationAngle = 180.0f; // Rotaciona 180 graus
+            }
             break;
         case 'a':
         case 'A':
-            newX += step;
+            if (direcaoAtualPinguim == OLHANDO_ESQUERDA) {
+                newX += step; // Anda para a "esquerda" (no seu sistema de coordenadas X positivo é esquerdo)
+            } else {
+                direcaoAtualPinguim = OLHANDO_ESQUERDA; // Muda a direção para esquerda
+                penguimRotationAngle = 90.0f; // Rotaciona 90 graus
+            }
             break;
         case 'd':
         case 'D':
-            newX -= step;
+            if (direcaoAtualPinguim == OLHANDO_DIREITA) {
+                newX -= step; // Anda para a "direita" (no seu sistema de coordenadas X negativo é direito)
+            } else {
+                direcaoAtualPinguim = OLHANDO_DIREITA; // Muda a direção para direita
+                penguimRotationAngle = -90.0f; // Rotaciona -90 graus
+            }
             break;
     }
 
     // Não deixa mãe andar fora do gelo
-    if (newX > (-ICE_SHEET_HALF_SIZE + PENGUIN_RADIUS) && 
+    if (newX > (-ICE_SHEET_HALF_SIZE + PENGUIN_RADIUS) &&
         newX < (ICE_SHEET_HALF_SIZE - PENGUIN_RADIUS) &&
-        newZ > (-ICE_SHEET_HALF_SIZE + PENGUIN_RADIUS) && 
+        newZ > (-ICE_SHEET_HALF_SIZE + PENGUIN_RADIUS) &&
         newZ < (ICE_SHEET_HALF_SIZE - PENGUIN_RADIUS)) {
         
         penguimMaeX = newX;
         penguimMaeZ = newZ;
-        
+
         // Verifica colisão com buracos após o movimento
         checkHoleCollisions();
     }

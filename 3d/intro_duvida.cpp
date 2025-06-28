@@ -36,28 +36,28 @@ void drawAxes() {
 
   glEnd();
 
-  // Marcadores nos sentidos positivos e negativos dos eixos:
-  glPushMatrix();
-      // Marcador para X+
-      glTranslatef(10.0f, 0.0f, 0.0f); // Move para X+
-      glRotatef(90.0f, 0.0f, 1.0f, 0.0f); // Roda o cone para apontar para +X
-      glColor3f(0.8f, 0.0f, 0.0f); // vermelho escuro para X+
-      glutSolidCone(0.3f, 1.0f, 20, 20);
-  glPopMatrix();
+  // // Marcadores nos sentidos positivos e negativos dos eixos:
+  // glPushMatrix();
+  //     // Marcador para X+
+  //     glTranslatef(10.0f, 0.0f, 0.0f); // Move para X+
+  //     glRotatef(90.0f, 0.0f, 1.0f, 0.0f); // Roda o cone para apontar para +X
+  //     glColor3f(0.8f, 0.0f, 0.0f); // vermelho escuro para X+
+  //     glutSolidCone(0.3f, 1.0f, 20, 20);
+  // glPopMatrix();
 
-  glPushMatrix();
-      // Marcador para Y+
-      glTranslatef(0.0f, 10.0f, 0.0f); // Move para Y+
-      glRotatef(-90.0f, 1.0f, 0.0f, 0.0f); // Roda o cone para apontar para +Y
-      glColor3f(0.0f, 0.8f, 0.0f); // verde escuro para Y+
-      glutSolidCone(0.3f, 1.0f, 20, 20);
-  glPopMatrix();
+  // glPushMatrix();
+  //     // Marcador para Y+
+  //     glTranslatef(0.0f, 10.0f, 0.0f); // Move para Y+
+  //     glRotatef(-90.0f, 1.0f, 0.0f, 0.0f); // Roda o cone para apontar para +Y
+  //     glColor3f(0.0f, 0.8f, 0.0f); // verde escuro para Y+
+  //     glutSolidCone(0.3f, 1.0f, 20, 20);
+  // glPopMatrix();
 
   glPushMatrix();
       // Marcador para Z-
-      glTranslatef(0.0f, 0.0f, -15.0f); // Move para Z-
+      glTranslatef(0.0f, 0.0f, -5.0f); // Move para Z-
       glRotatef(-90.0f, 1.0f, 0.0f, 0.0f); // Roda o cone para apontar para -Z
-      glColor3f(0.6f, 0.6f, 1.0f); // azul claro para Z-
+      glColor3f(1.0f, 1.0f, 1.0f);
       glutSolidCone(0.3f, 1.0f, 20, 20);
   glPopMatrix();
 
@@ -85,10 +85,11 @@ void display() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glMatrixMode(GL_MODELVIEW);
-  gluLookAt(0, 0, 2.5,0,0,0, 0, 1, 0);
+  gluLookAt(0.0, 0.0, 2.5,0.0,0.0,0.0, 0.0, 1.0, 0.0);
   drawAxes();
 
-  glFlush();
+  // glFlush();
+  glutSwapBuffers(); 
 }
 
 // We don't want the scene to get distorted when the window size changes, so
@@ -169,7 +170,7 @@ int main(int argc, char** argv) {
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
   glutInitWindowPosition(80, 80);
-  glutInitWindowSize(1200, 1200);
+  glutInitWindowSize(800, 600);
   glutCreateWindow("Cyan Shapes in Yellow Light");
   glutReshapeFunc(reshape);
   glutDisplayFunc(display);
