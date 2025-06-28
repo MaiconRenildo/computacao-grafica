@@ -43,6 +43,16 @@ float cameraDistance = 5.0;
 int canCollectFish = 1;
 int hasFishInMouth = 0;
 
+// variaveis pras asas
+int lastKeyPressedTime = 0;
+float wingSwingAngle = 0.0f;
+float wingSwingSpeed = 0.5f;
+int wingSwingDirection = 1;
+int isPenguinMoving = 0;
+int movementIdleCounter = 0;
+const int IDLE_THRESHOLD = 1;
+const int IDLE_TIMEOUT_MS = 100;
+
 // Variáveis para os peixes
 float fishXPositions[NUM_PEIXES] = {-6.0f, -3.5f, 4.0f, 7.0};
 float fishZPositions[NUM_PEIXES] = {-8.0f, -4.0f, 4.0f, 8.0};
@@ -261,7 +271,30 @@ void doFrame(int v){
         }
         lastToggleTime = currentTime;
     }
-    
+
+    // animação das asas
+    if ((currentTime - lastKeyPressedTime) < IDLE_TIMEOUT_MS) {
+        wingSwingAngle += wingSwingDirection * wingSwingSpeed;
+        if (wingSwingAngle > 15.0f){
+            wingSwingAngle = 15.0f;
+            wingSwingDirection = -1;
+        } else if (wingSwingAngle < -15.0f){
+            wingSwingAngle = -15.0f;
+            wingSwingDirection = 1;
+        }
+        movementIdleCounter = IDLE_THRESHOLD;
+    } else {
+        if (movementIdleCounter > 0) {
+            movementIdleCounter--;
+        } else {
+            if (fabs(wingSwingAngle) > 0.5f) {
+                wingSwingAngle *= 0.85;
+            } else {
+                wingSwingAngle = 0.0f;
+            }
+        }
+    }
+
     updateFishPositions();
     checkHoleCollisions();  
     glutPostRedisplay();
@@ -472,19 +505,33 @@ void drawPenguimHead(){
 }
 
 // Desenha asas dos pinguins
-void drawPenguimWings(){
-    glColor3f(0.05, 0.05, 0.05);
+void drawPenguimWings(bool isMother=false){
+    if(isMother){
+        glColor3f(0.7f, 0.7f, 0.7f);
+    }else{
+        glColor3f(0.05, 0.05, 0.05);
+    }
     glTranslatef(0, -0.3, 0.0);
     glPushMatrix();
+        // esquerda
         glPushMatrix();
             glTranslatef(-0.5, 0.5, 0.0);
-            glRotatef(-30.0, 0.0, 0.0, 1.0);
+            if(isMother){
+                glRotatef(-30.0 + wingSwingAngle, 0.0, 0.0, 1.0);
+            }else{
+                glRotatef(-30.0, 0.0, 0.0, 1.0);
+            }
             glScalef(0.2, 0.8, 0.5);
             drawSphere();
         glPopMatrix();
+        // direita
         glPushMatrix();
             glTranslatef(0.5, 0.5, 0.0);
-            glRotatef(30.0, 0.0, 0.0, 1.0);
+            if(isMother){
+                glRotatef(30.0 - wingSwingAngle, 0.0, 0.0, 1.0);
+            }else{
+                glRotatef(30.0, 0.0, 0.0, 1.0);
+            }
             glScalef(0.2, 0.8, 0.5);
             drawSphere();
         glPopMatrix();
@@ -507,12 +554,12 @@ void drawPenguimFeet(){
 }
 
 // Desenha pinguim 
-void drawPenguim(){
+void drawPenguim(bool isMother=false){
     glPushMatrix();
         drawPenguimHead();
         drawPenguimBody();
         drawPenguimStomach();
-        drawPenguimWings();
+        drawPenguimWings(isMother);
         drawPenguimFeet();
     glPopMatrix();
 }
@@ -524,7 +571,7 @@ void drawPenguimBaby(){
         glTranslatef(babyPenguinX, 0.41, babyPenguinZ);
         glRotatef(180, 0.0f, 1.0f, 0.0f); 
         glScalef(0.8, 0.6, 0.8);
-        drawPenguim();
+        drawPenguim(false);
     glPopMatrix();
 }
 
@@ -620,7 +667,7 @@ void drawPenguimMother(){
     glPushMatrix();
         glTranslatef(motherPenguinX, 0.65, motherPenguinZ);
         glRotatef(penguimRotationAngle, 0.0f, 1.0f, 0.0f); // Rotação no eixo Y
-        drawPenguim();
+        drawPenguim(true);
         if (hasFishInMouth) {
             glPushMatrix();
                 glTranslatef(0.0f, 0.5f, 0.7f);
@@ -705,16 +752,18 @@ void resizeWindow(GLsizei w, GLsizei h){
 
 void keyboard(int key, int x, int y) {
     float step = 0.3;
-    float angleStep = 5.0;
 
-    // Calcula a nova posição temporária
     float newX = motherPenguinX;
     float newZ = motherPenguinZ;
+
+    // Flag para saber se houve um movimento válido ou mudança de direção
+    bool movedOrChangedDirection = false;
 
     switch(key) {
         case GLUT_KEY_UP: // Seta para Cima
             if (direcaoAtualPinguim == FACING_FORWARD) {
                 newZ += step;
+                movedOrChangedDirection = true;
             } else {
                 direcaoAtualPinguim = FACING_FORWARD;
                 penguimRotationAngle = 0.0;
@@ -723,6 +772,7 @@ void keyboard(int key, int x, int y) {
         case GLUT_KEY_DOWN: // Seta para Baixo
             if (direcaoAtualPinguim == FACING_BACKWARD) {
                 newZ -= step;
+                movedOrChangedDirection = true;
             } else {
                 direcaoAtualPinguim = FACING_BACKWARD;
                 penguimRotationAngle = 180.0;
@@ -731,6 +781,7 @@ void keyboard(int key, int x, int y) {
         case GLUT_KEY_LEFT: // Seta para Esquerda
             if (direcaoAtualPinguim == FACING_LEFT) {
                 newX += step;
+                movedOrChangedDirection = true;
             } else {
                 direcaoAtualPinguim = FACING_LEFT;
                 penguimRotationAngle = 90.0;
@@ -739,6 +790,7 @@ void keyboard(int key, int x, int y) {
         case GLUT_KEY_RIGHT: // Seta para Direita
             if (direcaoAtualPinguim == FACING_RIGHT) {
                 newX -= step;
+                movedOrChangedDirection = true;
             } else {
                 direcaoAtualPinguim = FACING_RIGHT;
                 penguimRotationAngle = -90.0;
@@ -751,14 +803,20 @@ void keyboard(int key, int x, int y) {
         newX < (ICE_SHEET_HALF_SIZE - PENGUIN_RADIUS) &&
         newZ > (-ICE_SHEET_HALF_SIZE + PENGUIN_RADIUS) &&
         newZ < (ICE_SHEET_HALF_SIZE - PENGUIN_RADIUS)) {
-            
-        motherPenguinX = newX;
-        motherPenguinZ = newZ;
 
+        if (newX != motherPenguinX || newZ != motherPenguinZ) {
+            motherPenguinX = newX;
+            motherPenguinZ = newZ;
+            movedOrChangedDirection = true;
+        }
         // Verifica colisão com buracos após o movimento
         checkHoleCollisions();
     }
 
+    if (movedOrChangedDirection) {
+        lastKeyPressedTime = glutGet(GLUT_ELAPSED_TIME);
+    }
+    
     glutPostRedisplay();
 }
 
