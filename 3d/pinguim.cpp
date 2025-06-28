@@ -73,13 +73,13 @@ float penguimRotationAngle = 0.0;
 
 // --- DECLARAÇÕES DAS FUNÇÕES ---
 void endGame(int isVictory, const char* message);
-void PosicionaObservador(void);
+void configureObserver(void);
 void checkCollisions(void);
 void checkHoleCollisions(void);
 void checkPenguinCollision(void);
 void updateFishPositions(void);
 void doFrame(int v);
-void DefineIluminacao(void);
+void defineLighting(void);
 void drawAxes(void);
 void drawSphere(void);
 void drawPyramid(float size, float height);
@@ -96,18 +96,18 @@ void drawPenguimBaby(void);
 void drawFishAtPosition(float x, float z, int direction);
 void drawPenguimMae(void);
 void drawFishes(void);
-void drawBuraco(float x, float y, float z, float radius);
+void drawHole(float x, float y, float z, float radius);
 void drawSheetOfIce(void);
-void Desenha(void);
-void EspecificaParametrosVisualizacao(void);
-void AlteraTamanhoJanela(GLsizei w, GLsizei h);
-void Teclado(unsigned char key, int x, int y);
-void Inicializa(void);
+void draw(void);
+void specifyViewParameters(void);
+void resizeWindow(GLsizei w, GLsizei h);
+void keyboard(unsigned char key, int x, int y);
+void initialize(void);
 // --- FIM DAS DECLARAÇÕES ---
 
 
 
-void PosicionaObservador(void) {
+void configureObserver(void) {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     
@@ -266,7 +266,7 @@ void doFrame(int v){
     glutTimerFunc(12, doFrame, 0);
 }
 
-void DefineIluminacao(void){
+void defineLighting(void){
     GLfloat luzAmbiente[4]={0.2,0.2,0.2,1.0};
     GLfloat luzDifusa[4]={0.7,0.7,0.7,1.0};
     GLfloat luzEspecular[4]={1.0, 1.0, 1.0, 1.0};
@@ -640,7 +640,7 @@ void drawFishes() {
     }
 }
 
-void drawBuraco(float x, float y, float z, float radius) {
+void drawHole(float x, float y, float z, float radius) {
     int numSegments = 50;
     glColor3f(0.0f, 0.0f, 0.0f);
 
@@ -669,14 +669,14 @@ void drawSheetOfIce() {
     // Buracos 
     if (showHoles) {
         for (int i = 0; i < NUM_BURACOS; i++) {
-            drawBuraco(holeX[i], 0.1f, holeZ[i],    holeRadius);
+            drawHole(holeX[i], 0.1f, holeZ[i],    holeRadius);
         }
     }
 }
 
-void Desenha(void){
+void draw(void){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    DefineIluminacao();
+    defineLighting();
     drawAxes();
     drawSheetOfIce();
     drawPenguimMae();   
@@ -685,23 +685,23 @@ void Desenha(void){
     glutSwapBuffers();
 }
 
-void EspecificaParametrosVisualizacao(void){
+void specifyViewParameters(void){
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(angle, fAspect, 0.5, 190);
-    PosicionaObservador();
+    configureObserver();
 }
 
-void AlteraTamanhoJanela(GLsizei w, GLsizei h){
+void resizeWindow(GLsizei w, GLsizei h){
     windowHeight = h;
     windowWidth = w;
     if (h == 0) h = 1;
     glViewport(0, 0, w, h);
     fAspect = (GLfloat)w/(GLfloat)h;
-    EspecificaParametrosVisualizacao();
+    specifyViewParameters();
 }
 
-void Teclado(unsigned char key, int x, int y) {
+void keyboard(unsigned char key, int x, int y) {
     float step = 0.3;
     float angleStep = 5.0;
 
@@ -764,7 +764,7 @@ void Teclado(unsigned char key, int x, int y) {
     glutPostRedisplay();
 }
 
-void Inicializa(void) {
+void initialize(void) {
     r = 1.0;
     g = 1.0;
     b = 1.0;
@@ -804,10 +804,10 @@ int main(int argc, char *argv[]){
     glutCreateWindow("Pinguim 3D");
 
     srand((unsigned int)time(NULL));
-    Inicializa();
-    glutDisplayFunc(Desenha);
-    glutReshapeFunc(AlteraTamanhoJanela);
-    glutKeyboardFunc(Teclado);
+    initialize();
+    glutDisplayFunc(draw);
+    glutReshapeFunc(resizeWindow);
+    glutKeyboardFunc(keyboard);
 
     doFrame(0);
     glutMainLoop();
