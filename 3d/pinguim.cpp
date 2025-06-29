@@ -28,6 +28,8 @@ GLfloat windowWidth = 400;
 GLfloat windowHeight = 400;
 GLfloat r, g, b;
 GLint especMaterial;
+int activeViewport = 3; // 0: X, 1: Y, 2: Z, 3: Perspectiva (padrão)
+bool showAllViewports = true; // Alternar entre todas as viewports ou apenas a principal
 
 // posições dos pinguins
 float initialMotherPenguinX = 2.0;
@@ -82,6 +84,7 @@ PenguinDirection direcaoAtualPinguim = FACING_FORWARD; // Começa olhando para f
 float penguimRotationAngle = 0.0; 
 
 // --- DECLARAÇÕES DAS FUNÇÕES ---
+void drawSceneContent(void); // Adicione esta linha
 void endGame(int isVictory, const char* message);
 void configureObserver(void);
 void checkCollisions(void);
@@ -112,6 +115,7 @@ void draw(void);
 void specifyViewParameters(void);
 void resizeWindow(GLsizei w, GLsizei h);
 void keyboard(int key, int x, int y);
+void keyboardpoint(unsigned char key, int x, int y);
 void initialize(void);
 // --- FIM DAS DECLARAÇÕES ---
 
@@ -723,15 +727,101 @@ void drawSheetOfIce() {
     }
 }
 
-void draw(void){
+void draw(void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    defineLighting();
+
+    if (showAllViewports) {
+        // --- Viewport 1: Câmera no Eixo X (visão lateral) ---
+        glViewport(0, windowHeight/2, windowWidth/2, windowHeight/2);
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        gluPerspective(50, (GLfloat)windowWidth/windowHeight, 0.5, 190);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        gluLookAt(15.0, 2.0, 0.0,  // Posição da câmera (X fixo)
+                 motherPenguinX, 0.0, motherPenguinZ,  // Olha para o pinguim
+                 0.0, 1.0, 0.0); // Vetor "up"
+        defineLighting();
+        drawSceneContent(); // Função que desenha tudo (gelo, pinguins, etc.)
+
+        // --- Viewport 2: Câmera no Eixo Y (visão de cima) ---
+        glViewport(windowWidth/2, windowHeight/2, windowWidth/2, windowHeight/2);
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        gluPerspective(50, (GLfloat)windowWidth/windowHeight, 0.5, 190);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        gluLookAt(0.0, 15.0, 0.0,  // Posição da câmera (Y fixo)
+                 motherPenguinX, 0.0, motherPenguinZ,  // Olha para o pinguim
+                 0.0, 0.0, -1.0); // Vetor "up" ajustado
+        defineLighting();
+        drawSceneContent();
+
+        // --- Viewport 3: Câmera no Eixo Z (visão frontal) ---
+        glViewport(0, 0, windowWidth/2, windowHeight/2);
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        gluPerspective(50, (GLfloat)windowWidth/windowHeight, 0.5, 190);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        gluLookAt(0.0, 2.0, 15.0,  // Posição da câmera (Z fixo)
+                 motherPenguinX, 0.0, motherPenguinZ,  // Olha para o pinguim
+                 0.0, 1.0, 0.0); // Vetor "up"
+        defineLighting();
+        drawSceneContent();
+
+        // --- Viewport 4: Câmera Perspectiva (original) ---
+        glViewport(windowWidth/2, 0, windowWidth/2, windowHeight/2);
+        specifyViewParameters(); // Usa a câmera original
+        defineLighting();
+        drawSceneContent();
+    } else {
+        // Modo: apenas uma viewport ativa (controlada por 'activeViewport')
+        glViewport(0, 0, windowWidth, windowHeight);
+        switch (activeViewport) {
+            case 0: // Eixo X
+                glMatrixMode(GL_PROJECTION);
+                glLoadIdentity();
+                gluPerspective(50, (GLfloat)windowWidth/windowHeight, 0.5, 190);
+                glMatrixMode(GL_MODELVIEW);
+                glLoadIdentity();
+                gluLookAt(15.0, 2.0, 0.0, motherPenguinX, 0.0, motherPenguinZ, 0.0, 1.0, 0.0);
+                break;
+            case 1: // Eixo Y
+                glMatrixMode(GL_PROJECTION);
+                glLoadIdentity();
+                gluPerspective(50, (GLfloat)windowWidth/windowHeight, 0.5, 190);
+                glMatrixMode(GL_MODELVIEW);
+                glLoadIdentity();
+                gluLookAt(0.0, 15.0, 0.0, motherPenguinX, 0.0, motherPenguinZ, 0.0, 0.0, -1.0);
+                break;
+            case 2: // Eixo Z
+                glMatrixMode(GL_PROJECTION);
+                glLoadIdentity();
+                gluPerspective(50, (GLfloat)windowWidth/windowHeight, 0.5, 190);
+                glMatrixMode(GL_MODELVIEW);
+                glLoadIdentity();
+                gluLookAt(0.0, 2.0, 15.0, motherPenguinX, 0.0, motherPenguinZ, 0.0, 1.0, 0.0);
+                break;
+            case 3: // Perspectiva original
+                specifyViewParameters();
+                break;
+        }
+        defineLighting();
+        drawSceneContent();
+    }
+
+    glutSwapBuffers();
+}
+
+// Função auxiliar para desenhar o conteúdo da cena (evita repetição de código)
+void drawSceneContent() {
+    glClear(GL_DEPTH_BUFFER_BIT); // Limpa apenas o depth buffer para cada viewport
     drawAxes();
     drawSheetOfIce();
-    drawPenguimMother();   
+    drawPenguimMother();
     drawPenguimBaby();
     drawFishes();
-    glutSwapBuffers();
 }
 
 void specifyViewParameters(void){
@@ -819,6 +909,30 @@ void keyboard(int key, int x, int y) {
     
     glutPostRedisplay();
 }
+void keyboardpoint(unsigned char key, int x, int y) {
+    switch (key) {
+        case 'v': // Alterna entre todas as viewports e a única ativa
+            showAllViewports = !showAllViewports;
+            break;
+        case '1': // Muda para viewport do eixo X
+            activeViewport = 0;
+            showAllViewports = false;
+            break;
+        case '2': // Muda para viewport do eixo Y
+            activeViewport = 1;
+            showAllViewports = false;
+            break;
+        case '3': // Muda para viewport do eixo Z
+            activeViewport = 2;
+            showAllViewports = false;
+            break;
+        case '4': // Muda para viewport perspectiva
+            activeViewport = 3;
+            showAllViewports = false;
+            break;
+    }
+    glutPostRedisplay();
+}
 
 void initialize(void) {
     r = 1.0;
@@ -864,6 +978,7 @@ int main(int argc, char *argv[]){
     glutDisplayFunc(draw);
     glutReshapeFunc(resizeWindow);
     glutSpecialFunc(keyboard);
+    glutKeyboardFunc(keyboardpoint);
 
     doFrame(0);
     glutMainLoop();
