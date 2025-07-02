@@ -28,7 +28,7 @@ GLfloat windowWidth = 400;
 GLfloat windowHeight = 400;
 GLfloat r, g, b;
 GLint especMaterial;
-int activeViewport = 3; // 0: X, 1: Y, 2: Z, 3: Perspectiva (padrão)
+int activeViewport = 0; // 0: X, 1: Y, 2: Z, 3: Perspectiva (padrão)
 bool showAllViewports = true; // Alternar entre todas as viewports ou apenas a principal
 
 // posições dos pinguins
@@ -737,7 +737,7 @@ void drawSheetOfIce() {
 }
 
 void drawXViewport(){
-    glViewport(0, windowHeight/2, windowWidth/2, windowHeight/2);
+    glViewport(windowWidth/2, 0, windowWidth/2, windowHeight/2);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(50, (GLfloat)windowWidth/windowHeight, 0.5, 190);
@@ -779,7 +779,7 @@ void drawZViewport(){
 }
 
 void drawMainViewport(){
-    glViewport(windowWidth/2, 0, windowWidth/2, windowHeight/2);
+    glViewport(0, windowHeight/2, windowWidth/2, windowHeight/2);
     specifyViewParameters(); // Usa a câmera original
     defineLighting();
     drawSceneContent();
@@ -801,7 +801,7 @@ void draw(void) {
         // Modo: apenas uma viewport ativa (controlada por 'activeViewport')
         glViewport(0, 0, windowWidth, windowHeight);
         switch (activeViewport) {
-            case 0: // Eixo X
+            case 3: // Eixo X
                 glMatrixMode(GL_PROJECTION);
                 glLoadIdentity();
                 gluPerspective(50, (GLfloat)windowWidth/windowHeight, 0.5, 190);
@@ -825,7 +825,7 @@ void draw(void) {
                 glLoadIdentity();
                 gluLookAt(0.0, 2.0, 15.0, motherPenguinX, 0.0, motherPenguinZ, 0.0, 1.0, 0.0);
                 break;
-            case 3: // Perspectiva original
+            case 0: // Perspectiva original
                 specifyViewParameters();
                 break;
         }
@@ -909,10 +909,10 @@ void keyboard(int key, int x, int y) {
 
     // Se estiver no modo de todas as viewports, o movimento se aplica à câmera de perspectiva.
     // Caso contrário, o movimento é específico da viewport ativa.
-    int currentActiveViewport = showAllViewports ? 3 : activeViewport; 
+    int currentActiveViewport = showAllViewports ? 0 : activeViewport; 
 
     switch(currentActiveViewport) {
-        case 0: // Câmera no Eixo X (visão lateral)
+        case 3: // Câmera no Eixo X (visão lateral)
             switch(key) {
                 case GLUT_KEY_UP: // "Para cima" na tela (em Z positivo)
                     toRight(newX, movedOrChangedDirection);
@@ -960,7 +960,7 @@ void keyboard(int key, int x, int y) {
                     break;
             }
             break;
-        case 3: // Câmera Perspectiva (comportamento original)
+        case 0: // Câmera Perspectiva (comportamento original)
         default:
             // Este comportamento já é relativo à direção do pinguim, o que é bom para a perspectiva.
             switch(key) {
