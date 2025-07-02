@@ -28,7 +28,7 @@ GLfloat windowWidth = 400;
 GLfloat windowHeight = 400;
 GLfloat r, g, b;
 GLint especMaterial;
-int activeViewport = 0; // 0: X, 1: Y, 2: Z, 3: Perspectiva (padrão)
+int activeViewport = 0; // 0: Perspectiva (padrão), 1: Y, 2: Z, 3: X
 bool showAllViewports = true; // Alternar entre todas as viewports ou apenas a principal
 
 // posições dos pinguins
@@ -839,7 +839,7 @@ void draw(void) {
 // Função auxiliar para desenhar o conteúdo da cena (evita repetição de código)
 void drawSceneContent() {
     glClear(GL_DEPTH_BUFFER_BIT); // Limpa apenas o depth buffer para cada viewport
-    drawAxes();
+    // drawAxes();
     drawSheetOfIce();
     drawPenguimMother();
     drawPenguimBaby();
