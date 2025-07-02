@@ -66,6 +66,7 @@ int fishDirectionsList[NUM_PEIXES] = {-1, 1, 1, -1}; // 1 para frente, -1 para t
 const float ICE_SHEET_HALF_SIZE = 10.0;
 const float PENGUIN_RADIUS = 1.0; // Raio aproximado do pinguim
 const float FISH_RADIUS = 0.8; // Raio aproximado do peixe
+const float STEP = 0.3;
 
 // Variáveis do jogo tempo e pontuação
 int startTime = 0; 
@@ -117,6 +118,14 @@ void resizeWindow(GLsizei w, GLsizei h);
 void keyboard(int key, int x, int y);
 void keyboardpoint(unsigned char key, int x, int y);
 void initialize(void);
+void toRight(float &newX, bool &movedOrChangedDirection);
+void toLeft(float &newX, bool &movedOrChangedDirection);
+void toUp(float &newZ, bool &movedOrChangedDirection);
+void toDown(float &newZ, bool &movedOrChangedDirection);
+void drawXViewport();
+void drawYViewport();
+void drawZViewport();
+void drawMainViewport();
 // --- FIM DAS DECLARAÇÕES ---
 
 
@@ -727,54 +736,67 @@ void drawSheetOfIce() {
     }
 }
 
+void drawXViewport(){
+    glViewport(0, windowHeight/2, windowWidth/2, windowHeight/2);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(50, (GLfloat)windowWidth/windowHeight, 0.5, 190);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(15.0, 2.0, 0.0,  // Posição da câmera (X fixo)
+             motherPenguinX, 0.0, motherPenguinZ,  // Olha para o pinguim
+             0.0, 1.0, 0.0); // Vetor "up"
+    defineLighting();
+    drawSceneContent(); // Função que desenha tudo (gelo, pinguins, etc.)
+}
+
+void drawYViewport(){
+    glViewport(windowWidth/2, windowHeight/2, windowWidth/2, windowHeight/2);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(50, (GLfloat)windowWidth/windowHeight, 0.5, 190);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(0.0, 15.0, 0.0,  // Posição da câmera (Y fixo)
+             motherPenguinX, 0.0, motherPenguinZ,  // Olha para o pinguim
+             0.0, 0.0, -1.0); // Vetor "up" ajustado
+    defineLighting();
+    drawSceneContent();
+}
+
+void drawZViewport(){
+    glViewport(0, 0, windowWidth/2, windowHeight/2);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(50, (GLfloat)windowWidth/windowHeight, 0.5, 190);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(0.0, 2.0, 15.0,  // Posição da câmera (Z fixo)
+             motherPenguinX, 0.0, motherPenguinZ,  // Olha para o pinguim
+             0.0, 1.0, 0.0); // Vetor "up"
+    defineLighting();
+    drawSceneContent();
+}
+
+void drawMainViewport(){
+    glViewport(windowWidth/2, 0, windowWidth/2, windowHeight/2);
+    specifyViewParameters(); // Usa a câmera original
+    defineLighting();
+    drawSceneContent();
+}
+
 void draw(void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     if (showAllViewports) {
         // --- Viewport 1: Câmera no Eixo X (visão lateral) ---
-        glViewport(0, windowHeight/2, windowWidth/2, windowHeight/2);
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        gluPerspective(50, (GLfloat)windowWidth/windowHeight, 0.5, 190);
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        gluLookAt(15.0, 2.0, 0.0,  // Posição da câmera (X fixo)
-                 motherPenguinX, 0.0, motherPenguinZ,  // Olha para o pinguim
-                 0.0, 1.0, 0.0); // Vetor "up"
-        defineLighting();
-        drawSceneContent(); // Função que desenha tudo (gelo, pinguins, etc.)
-
+        drawXViewport();
         // --- Viewport 2: Câmera no Eixo Y (visão de cima) ---
-        glViewport(windowWidth/2, windowHeight/2, windowWidth/2, windowHeight/2);
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        gluPerspective(50, (GLfloat)windowWidth/windowHeight, 0.5, 190);
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        gluLookAt(0.0, 15.0, 0.0,  // Posição da câmera (Y fixo)
-                 motherPenguinX, 0.0, motherPenguinZ,  // Olha para o pinguim
-                 0.0, 0.0, -1.0); // Vetor "up" ajustado
-        defineLighting();
-        drawSceneContent();
-
+        drawYViewport();
         // --- Viewport 3: Câmera no Eixo Z (visão frontal) ---
-        glViewport(0, 0, windowWidth/2, windowHeight/2);
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        gluPerspective(50, (GLfloat)windowWidth/windowHeight, 0.5, 190);
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        gluLookAt(0.0, 2.0, 15.0,  // Posição da câmera (Z fixo)
-                 motherPenguinX, 0.0, motherPenguinZ,  // Olha para o pinguim
-                 0.0, 1.0, 0.0); // Vetor "up"
-        defineLighting();
-        drawSceneContent();
-
+        drawZViewport();
         // --- Viewport 4: Câmera Perspectiva (original) ---
-        glViewport(windowWidth/2, 0, windowWidth/2, windowHeight/2);
-        specifyViewParameters(); // Usa a câmera original
-        defineLighting();
-        drawSceneContent();
+        drawMainViewport();
     } else {
         // Modo: apenas uma viewport ativa (controlada por 'activeViewport')
         glViewport(0, 0, windowWidth, windowHeight);
@@ -840,54 +862,123 @@ void resizeWindow(GLsizei w, GLsizei h){
     specifyViewParameters();
 }
 
-void keyboard(int key, int x, int y) {
-    float step = 0.3;
+void toRight(float &newX, bool &movedOrChangedDirection){
+    if (direcaoAtualPinguim == FACING_RIGHT) {
+        newX -= STEP;
+        movedOrChangedDirection = true;
+    } else {
+        direcaoAtualPinguim = FACING_RIGHT;
+        penguimRotationAngle = -90.0;
+    }
+}
 
+void toLeft(float &newX, bool &movedOrChangedDirection){
+    if (direcaoAtualPinguim == FACING_LEFT) {
+        newX += STEP;
+        movedOrChangedDirection = true;
+    } else {
+        direcaoAtualPinguim = FACING_LEFT;
+        penguimRotationAngle = 90.0;
+    }
+}
+
+void toUp(float &newZ, bool &movedOrChangedDirection){
+    if (direcaoAtualPinguim == FACING_FORWARD) {
+        newZ += STEP;
+        movedOrChangedDirection = true;
+    } else {
+        direcaoAtualPinguim = FACING_FORWARD;
+        penguimRotationAngle = 0.0;
+    }
+}
+
+void toDown(float &newZ, bool &movedOrChangedDirection){
+    if (direcaoAtualPinguim == FACING_BACKWARD) {
+        newZ -= STEP;
+        movedOrChangedDirection = true;
+    } else {
+        direcaoAtualPinguim = FACING_BACKWARD;
+        penguimRotationAngle = 180.0;
+    }
+}
+void keyboard(int key, int x, int y) {
+    
     float newX = motherPenguinX;
     float newZ = motherPenguinZ;
-
-    // Flag para saber se houve um movimento válido ou mudança de direção
     bool movedOrChangedDirection = false;
 
-    switch(key) {
-        case GLUT_KEY_UP: // Seta para Cima
-            if (direcaoAtualPinguim == FACING_FORWARD) {
-                newZ += step;
-                movedOrChangedDirection = true;
-            } else {
-                direcaoAtualPinguim = FACING_FORWARD;
-                penguimRotationAngle = 0.0;
+    // Se estiver no modo de todas as viewports, o movimento se aplica à câmera de perspectiva.
+    // Caso contrário, o movimento é específico da viewport ativa.
+    int currentActiveViewport = showAllViewports ? 3 : activeViewport; 
+
+    switch(currentActiveViewport) {
+        case 0: // Câmera no Eixo X (visão lateral)
+            switch(key) {
+                case GLUT_KEY_UP: // "Para cima" na tela (em Z positivo)
+                    toRight(newX, movedOrChangedDirection);
+                    break;
+                case GLUT_KEY_DOWN: // "Para baixo" na tela (em Z negativo)
+                    toLeft(newX, movedOrChangedDirection);
+                    break;
+                case GLUT_KEY_LEFT: // "Para a esquerda" na tela (em X negativo)
+                    toUp(newZ, movedOrChangedDirection);
+                    break;
+                case GLUT_KEY_RIGHT: // "Para a direita" na tela (em X positivo)
+                    toDown(newZ, movedOrChangedDirection);
+                    break;
             }
             break;
-        case GLUT_KEY_DOWN: // Seta para Baixo
-            if (direcaoAtualPinguim == FACING_BACKWARD) {
-                newZ -= step;
-                movedOrChangedDirection = true;
-            } else {
-                direcaoAtualPinguim = FACING_BACKWARD;
-                penguimRotationAngle = 180.0;
+        case 1: // Câmera no Eixo Y (visão de cima)
+            switch(key) {
+                case GLUT_KEY_UP: // "Para cima" na tela (em Z positivo)
+                    toDown(newZ, movedOrChangedDirection);
+                    break;
+                case GLUT_KEY_DOWN: // "Para baixo" na tela (em Z negativo)
+                    toUp(newZ, movedOrChangedDirection);
+                    break;
+                case GLUT_KEY_LEFT: // "Para a esquerda" na tela (em X negativo)
+                    toRight(newX, movedOrChangedDirection);
+                    break;
+                case GLUT_KEY_RIGHT: // "Para a direita" na tela (em X positivo)
+                    toLeft(newX, movedOrChangedDirection);    
+                    break;
             }
             break;
-        case GLUT_KEY_LEFT: // Seta para Esquerda
-            if (direcaoAtualPinguim == FACING_LEFT) {
-                newX += step;
-                movedOrChangedDirection = true;
-            } else {
-                direcaoAtualPinguim = FACING_LEFT;
-                penguimRotationAngle = 90.0;
+        case 2: // Câmera no Eixo Z (visão frontal)
+            switch(key) {
+                case GLUT_KEY_UP: // "Para cima" na tela (em X positivo, pinguim se afastando)
+                    toDown(newZ, movedOrChangedDirection);
+                    break;
+                case GLUT_KEY_DOWN: // "Para baixo" na tela (em X negativo, pinguim se aproximando)
+                    toUp(newZ, movedOrChangedDirection);
+                    break;
+                case GLUT_KEY_LEFT: // "Para a esquerda" na tela (em Z negativo)
+                    toRight(newX, movedOrChangedDirection);
+                    break;
+                case GLUT_KEY_RIGHT: // "Para a direita" na tela (em Z positivo)
+                    toLeft(newX, movedOrChangedDirection);
+                    break;
             }
             break;
-        case GLUT_KEY_RIGHT: // Seta para Direita
-            if (direcaoAtualPinguim == FACING_RIGHT) {
-                newX -= step;
-                movedOrChangedDirection = true;
-            } else {
-                direcaoAtualPinguim = FACING_RIGHT;
-                penguimRotationAngle = -90.0;
+        case 3: // Câmera Perspectiva (comportamento original)
+        default:
+            // Este comportamento já é relativo à direção do pinguim, o que é bom para a perspectiva.
+            switch(key) {
+                case GLUT_KEY_UP: // Seta para Cima
+                    toUp(newZ, movedOrChangedDirection);
+                    break;
+                case GLUT_KEY_DOWN: // Seta para Baixo
+                    toDown(newZ, movedOrChangedDirection);
+                    break;
+                case GLUT_KEY_LEFT: // Seta para Esquerda
+                    toLeft(newX, movedOrChangedDirection);
+                    break;
+                case GLUT_KEY_RIGHT: // Seta para Direita
+                    toRight(newX, movedOrChangedDirection);
+                    break;
             }
             break;
     }
-
     // Não deixa mãe andar fora do gelo
     if (newX > (-ICE_SHEET_HALF_SIZE + PENGUIN_RADIUS) &&
         newX < (ICE_SHEET_HALF_SIZE - PENGUIN_RADIUS) &&
@@ -909,6 +1000,7 @@ void keyboard(int key, int x, int y) {
     
     glutPostRedisplay();
 }
+
 void keyboardpoint(unsigned char key, int x, int y) {
     switch (key) {
         case 'v': // Alterna entre todas as viewports e a única ativa
