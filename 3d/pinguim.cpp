@@ -48,12 +48,15 @@ int hasFishInMouth = 0;
 // variaveis pras asas
 int lastKeyPressedTime = 0;
 float wingSwingAngle = 0.0f;
-float wingSwingSpeed = 0.5f;
+float wingSwingSpeed = 1.0f;
 int wingSwingDirection = 1;
 int isPenguinMoving = 0; 
 int movementIdleCounter = 0;
 const int IDLE_THRESHOLD = 1;
 const int IDLE_TIMEOUT_MS = 100;
+float leftWingAngle = -30.0f;  
+float rightWingAngle = 30.0f;   
+const float MAX_WING_ANGLE = 45.0f; // Amplitude máxima do balanço
 
 // Variáveis para os peixes
 float fishXPositions[NUM_PEIXES] = {-6.0f, -3.5f, 4.0f, 7.0};
@@ -308,6 +311,25 @@ void doFrame(int v){
         }
     }
 
+    // Atualiza o movimento das asas apenas quando o pinguim está se movendo
+    if (isPenguinMoving) {
+        // Atualiza os ângulos das asas
+        leftWingAngle += wingSwingSpeed * wingSwingDirection;
+        rightWingAngle -= wingSwingSpeed * wingSwingDirection;
+        
+        // Inverte a direção quando atingir os limites
+        if (leftWingAngle > -30.0f + MAX_WING_ANGLE || 
+            leftWingAngle < -30.0f - MAX_WING_ANGLE) {
+            wingSwingDirection *= -1;
+        }
+    } else {
+        // Retorna as asas suavemente à posição inicial quando parado
+        if (fabs(leftWingAngle + 30.0f) > 0.5f) {
+            leftWingAngle += (leftWingAngle < -30.0f ? 0.5f : -0.5f);
+            rightWingAngle += (rightWingAngle > 30.0f ? -0.5f : 0.5f);
+        }
+    }
+
     // Verifica se o pinguim parou de se mover
     if (isPenguinMoving && (currentTime - lastKeyPressedTime > IDLE_TIMEOUT_MS)) {
         isPenguinMoving = false;
@@ -532,21 +554,13 @@ void drawPenguimWings(bool isMother=false) {
     
     glTranslatef(0, -0.3, 0.0);
     glPushMatrix();
-        float swingAngle = 0.0f;
-        if (isMother && isPenguinMoving) {
-            float time = glutGet(GLUT_ELAPSED_TIME) / 1000.0f;
-            swingAngle = 25.0f * sin(time * 5.0f);
-        }
-
-        // Asa esquerda
+        // Asa esquerda - movimento mais natural
         glPushMatrix();
             glTranslatef(-0.5, 0.5, 0.0);
             if(isMother) {
-                if(isPenguinMoving) {
-                    glRotatef(-30.0 + swingAngle, 0.0, 0.0, 1.0);
-                } else {
-                    glRotatef(-30.0, 0.0, 0.0, 1.0); // Posição parada
-                }
+                // Combinação de rotações para movimento mais orgânico
+                glRotatef(leftWingAngle, 0.0, 0.0, 1.0); // Balanço lateral
+                glRotatef(fabs(leftWingAngle + 30.0f) * 0.3f, 0.0, 0.0, 1.0); // Pequeno movimento para frente/trás
             } else {
                 glRotatef(-30.0, 0.0, 0.0, 1.0);
             }
@@ -554,15 +568,12 @@ void drawPenguimWings(bool isMother=false) {
             drawSphere();
         glPopMatrix();
 
-        // Asa direita
+        // Asa direita - movimento oposto ao da esquerda
         glPushMatrix();
             glTranslatef(0.5, 0.5, 0.0);
             if(isMother) {
-                if(isPenguinMoving) {
-                    glRotatef(30.0 - swingAngle, 0.0, 0.0, 1.0);
-                } else {
-                    glRotatef(30.0, 0.0, 0.0, 1.0); // Posição parada
-                }
+                glRotatef(rightWingAngle, 0.0, 0.0, 1.0);
+                glRotatef(-fabs(rightWingAngle - 30.0f) * 0.3f, 0.0, 0.0, 1.0);
             } else {
                 glRotatef(30.0, 0.0, 0.0, 1.0);
             }
@@ -1019,14 +1030,10 @@ void keyboard(int key, int x, int y) {
 
     if (movedOrChangedDirection) {
         lastKeyPressedTime = glutGet(GLUT_ELAPSED_TIME);
-        isPenguinMoving = true; // Indica que o pinguim está se movendo
-    } else {
-        // Verifica se o pinguim parou de se mover
-        if (glutGet(GLUT_ELAPSED_TIME) - lastKeyPressedTime > IDLE_TIMEOUT_MS) {
-            isPenguinMoving = false;
-        }
+        isPenguinMoving = true;
+    } else if (isPenguinMoving && (glutGet(GLUT_ELAPSED_TIME) - lastKeyPressedTime > IDLE_TIMEOUT_MS)) {
+        isPenguinMoving = false;
     }
-    
     // Verifica colisão com buracos após o movimento
     checkHoleCollisions();
     glutPostRedisplay();
