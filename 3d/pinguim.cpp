@@ -50,7 +50,7 @@ int lastKeyPressedTime = 0;
 float wingSwingAngle = 0.0f;
 float wingSwingSpeed = 0.5f;
 int wingSwingDirection = 1;
-int isPenguinMoving = 0;
+int isPenguinMoving = 0; 
 int movementIdleCounter = 0;
 const int IDLE_THRESHOLD = 1;
 const int IDLE_TIMEOUT_MS = 100;
@@ -526,22 +526,32 @@ void drawPenguimWings(bool isMother=false){
     }
     glTranslatef(0, -0.3, 0.0);
     glPushMatrix();
-        // esquerda
+        // Calcula o ângulo de balanço baseado no tempo e movimento
+        float swingAngle = 0.0f;
+        if (isMother && isPenguinMoving) {
+            float time = glutGet(GLUT_ELAPSED_TIME) / 1000.0f; // Tempo em segundos
+            swingAngle = 25.0f * sin(time * 5.0f); // Oscila entre -25 e 25 graus
+        }
+
+        // Asa esquerda
         glPushMatrix();
             glTranslatef(-0.5, 0.5, 0.0);
             if(isMother){
-                glRotatef(-30.0 + wingSwingAngle, 0.0, 0.0, 1.0);
+                glRotatef(-30.0 + swingAngle, 0.0, 0.0, 1.0); // Balanço no eixo Z
+                glRotatef(swingAngle * 0.5, 1.0, 0.0, 0.0); // Pequeno movimento para frente/trás
             }else{
                 glRotatef(-30.0, 0.0, 0.0, 1.0);
             }
             glScalef(0.2, 0.8, 0.5);
             drawSphere();
         glPopMatrix();
-        // direita
+
+        // Asa direita (movimento oposto ao da esquerda)
         glPushMatrix();
             glTranslatef(0.5, 0.5, 0.0);
             if(isMother){
-                glRotatef(30.0 - wingSwingAngle, 0.0, 0.0, 1.0);
+                glRotatef(30.0 - swingAngle, 0.0, 0.0, 1.0); // Balanço no eixo Z
+                glRotatef(-swingAngle * 0.5, 1.0, 0.0, 0.0); // Pequeno movimento para frente/trás
             }else{
                 glRotatef(30.0, 0.0, 0.0, 1.0);
             }
@@ -996,6 +1006,12 @@ void keyboard(int key, int x, int y) {
 
     if (movedOrChangedDirection) {
         lastKeyPressedTime = glutGet(GLUT_ELAPSED_TIME);
+        isPenguinMoving = true; // Indica que o pinguim está se movendo
+    } else {
+        // Verifica se o pinguim parou de se mover
+        if (glutGet(GLUT_ELAPSED_TIME) - lastKeyPressedTime > IDLE_TIMEOUT_MS) {
+            isPenguinMoving = false;
+        }
     }
     
     glutPostRedisplay();
