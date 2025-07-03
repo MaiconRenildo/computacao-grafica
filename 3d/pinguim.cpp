@@ -308,6 +308,11 @@ void doFrame(int v){
         }
     }
 
+    // Verifica se o pinguim parou de se mover
+    if (isPenguinMoving && (currentTime - lastKeyPressedTime > IDLE_TIMEOUT_MS)) {
+        isPenguinMoving = false;
+    }
+
     updateFishPositions();
     checkHoleCollisions();  
     glutPostRedisplay();
@@ -518,41 +523,47 @@ void drawPenguimHead(){
 }
 
 // Desenha asas dos pinguins
-void drawPenguimWings(bool isMother=false){
-    if(isMother){
+void drawPenguimWings(bool isMother=false) {
+    if(isMother) {
         glColor3f(0.7f, 0.7f, 0.7f);
-    }else{
+    } else {
         glColor3f(0.05, 0.05, 0.05);
     }
+    
     glTranslatef(0, -0.3, 0.0);
     glPushMatrix();
-        // Calcula o ângulo de balanço baseado no tempo e movimento
         float swingAngle = 0.0f;
         if (isMother && isPenguinMoving) {
-            float time = glutGet(GLUT_ELAPSED_TIME) / 1000.0f; // Tempo em segundos
-            swingAngle = 25.0f * sin(time * 5.0f); // Oscila entre -25 e 25 graus
+            float time = glutGet(GLUT_ELAPSED_TIME) / 1000.0f;
+            swingAngle = 25.0f * sin(time * 5.0f);
         }
 
         // Asa esquerda
         glPushMatrix();
             glTranslatef(-0.5, 0.5, 0.0);
-            if(isMother){
-                glRotatef(-30.0 + swingAngle, 0.0, 0.0, 1.0); // Balanço no eixo Z
-                glRotatef(swingAngle * 0.5, 1.0, 0.0, 0.0); // Pequeno movimento para frente/trás
-            }else{
+            if(isMother) {
+                if(isPenguinMoving) {
+                    glRotatef(-30.0 + swingAngle, 0.0, 0.0, 1.0);
+                } else {
+                    glRotatef(-30.0, 0.0, 0.0, 1.0); // Posição parada
+                }
+            } else {
                 glRotatef(-30.0, 0.0, 0.0, 1.0);
             }
             glScalef(0.2, 0.8, 0.5);
             drawSphere();
         glPopMatrix();
 
-        // Asa direita (movimento oposto ao da esquerda)
+        // Asa direita
         glPushMatrix();
             glTranslatef(0.5, 0.5, 0.0);
-            if(isMother){
-                glRotatef(30.0 - swingAngle, 0.0, 0.0, 1.0); // Balanço no eixo Z
-                glRotatef(-swingAngle * 0.5, 1.0, 0.0, 0.0); // Pequeno movimento para frente/trás
-            }else{
+            if(isMother) {
+                if(isPenguinMoving) {
+                    glRotatef(30.0 - swingAngle, 0.0, 0.0, 1.0);
+                } else {
+                    glRotatef(30.0, 0.0, 0.0, 1.0); // Posição parada
+                }
+            } else {
                 glRotatef(30.0, 0.0, 0.0, 1.0);
             }
             glScalef(0.2, 0.8, 0.5);
@@ -999,6 +1010,8 @@ void keyboard(int key, int x, int y) {
             motherPenguinX = newX;
             motherPenguinZ = newZ;
             movedOrChangedDirection = true;
+            isPenguinMoving = true; // Pinguim está se movendo
+            lastKeyPressedTime = glutGet(GLUT_ELAPSED_TIME);
         }
         // Verifica colisão com buracos após o movimento
         checkHoleCollisions();
@@ -1014,6 +1027,8 @@ void keyboard(int key, int x, int y) {
         }
     }
     
+    // Verifica colisão com buracos após o movimento
+    checkHoleCollisions();
     glutPostRedisplay();
 }
 
