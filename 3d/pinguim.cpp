@@ -75,6 +75,12 @@ const float STEP = 0.3;
 int startTime = 0; 
 int collected = 0;
 int lastFedTime = 0;
+
+// Variáveis para textura
+GLuint iceTexture;
+int textureWidth = 512, textureHeight = 512;
+unsigned char* textureData;
+
 // Define as direções para onde o pinguim pode estar "olhando"
 typedef enum {
     FACING_FORWARD,
@@ -182,6 +188,42 @@ void endGame(int isVictory, const char* message) {
     printf("PEIXES COLETADOS: %d \n", collected);
     printf("=====================\n");
     exit(0);
+}
+
+// Função para carregar textura
+void loadTexture() {
+    // Aloca memória para a textura (padrão de gelo azul claro)
+    textureData = (unsigned char*)malloc(textureWidth * textureHeight * 3);
+    
+    // Cria um padrão de gelo procedural
+    for (int y = 0; y < textureHeight; y++) {
+        for (int x = 0; x < textureWidth; x++) {
+            // Posição no array
+            int index = (y * textureWidth + x) * 3;
+            
+            // Base azul clara
+            textureData[index] = 180 + rand() % 30;     // R
+            textureData[index+1] = 220 + rand() % 35;  // G
+            textureData[index+2] = 255;                // B
+            
+            // Adiciona algumas veias brancas para efeito de gelo
+            if (rand() % 100 < 5) {
+                textureData[index] = 240 + rand() % 15;
+                textureData[index+1] = 240 + rand() % 15;
+                textureData[index+2] = 255;
+            }
+        }
+    }
+    
+    // Cria a textura OpenGL
+    glGenTextures(1, &iceTexture);
+    glBindTexture(GL_TEXTURE_2D, iceTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, 
+                 GL_RGB, GL_UNSIGNED_BYTE, textureData);
+    
+    free(textureData); // Libera a memória após carregar a textura
 }
 
 // Colisão mãe e buraco
@@ -752,18 +794,64 @@ void drawHole(float x, float y, float z, float radius) {
 }
 
 void drawSheetOfIce() {
-    // Gelo
-    glColor3f(0.7f, 0.9f, 1.0f);
+    // Habilita textura e define propriedades
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, iceTexture);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    
+    // Gelo com textura
+    glColor3f(1.0f, 1.0f, 1.0f); // Cor branca para não interferir na textura
     glPushMatrix();
         glTranslatef(0.0, -0.5, 0.0);
         glScalef(20.0, 1, 20.0);
-        glutSolidCube(1.0);
+        
+        // Desenha o cubo com coordenadas de textura
+        glBegin(GL_QUADS);
+            // Face frontal
+            glNormal3f(0.0, 1.0, 0.0);
+            glTexCoord2f(0.0, 0.0); glVertex3f(-0.5, 0.5, -0.5);
+            glTexCoord2f(1.0, 0.0); glVertex3f(0.5, 0.5, -0.5);
+            glTexCoord2f(1.0, 1.0); glVertex3f(0.5, 0.5, 0.5);
+            glTexCoord2f(0.0, 1.0); glVertex3f(-0.5, 0.5, 0.5);
+            
+            // Face traseira
+            glNormal3f(0.0, -1.0, 0.0);
+            glTexCoord2f(0.0, 0.0); glVertex3f(-0.5, -0.5, 0.5);
+            glTexCoord2f(1.0, 0.0); glVertex3f(0.5, -0.5, 0.5);
+            glTexCoord2f(1.0, 1.0); glVertex3f(0.5, -0.5, -0.5);
+            glTexCoord2f(0.0, 1.0); glVertex3f(-0.5, -0.5, -0.5);
+            
+            // Face esquerda
+            glNormal3f(-1.0, 0.0, 0.0);
+            glTexCoord2f(0.0, 0.0); glVertex3f(-0.5, -0.5, 0.5);
+            glTexCoord2f(1.0, 0.0); glVertex3f(-0.5, -0.5, -0.5);
+            glTexCoord2f(1.0, 1.0); glVertex3f(-0.5, 0.5, -0.5);
+            glTexCoord2f(0.0, 1.0); glVertex3f(-0.5, 0.5, 0.5);
+            
+            // Face direita
+            glNormal3f(1.0, 0.0, 0.0);
+            glTexCoord2f(0.0, 0.0); glVertex3f(0.5, -0.5, -0.5);
+            glTexCoord2f(1.0, 0.0); glVertex3f(0.5, -0.5, 0.5);
+            glTexCoord2f(1.0, 1.0); glVertex3f(0.5, 0.5, 0.5);
+            glTexCoord2f(0.0, 1.0); glVertex3f(0.5, 0.5, -0.5);
+            
+            // Face superior (já desenhada como face frontal)
+            
+            // Face inferior
+            glNormal3f(0.0, -1.0, 0.0);
+            glTexCoord2f(0.0, 0.0); glVertex3f(-0.5, -0.5, -0.5);
+            glTexCoord2f(1.0, 0.0); glVertex3f(0.5, -0.5, -0.5);
+            glTexCoord2f(1.0, 1.0); glVertex3f(0.5, -0.5, 0.5);
+            glTexCoord2f(0.0, 1.0); glVertex3f(-0.5, -0.5, 0.5);
+        glEnd();
     glPopMatrix();
-
-    // Buracos 
+    
+    glDisable(GL_TEXTURE_2D); // Desabilita textura para outros objetos
+    
+    // Buracos (sem textura)
     if (showHoles) {
         for (int i = 0; i < NUM_BURACOS; i++) {
-            drawHole(holeX[i], 0.1f, holeZ[i],    holeRadius);
+            drawHole(holeX[i], 0.1f, holeZ[i], holeRadius);
         }
     }
 }
@@ -1077,6 +1165,10 @@ void initialize(void) {
     glEnable(GL_DEPTH_TEST);
     glShadeModel(GL_FLAT);
     
+    // Habilita texturas
+    glEnable(GL_TEXTURE_2D);
+    loadTexture(); // Carrega a textura do gelo
+    
     angle = 50;
     
     cameraDistance = 20.0;
@@ -1092,7 +1184,7 @@ void initialize(void) {
     }
     
     lastToggleTime = glutGet(GLUT_ELAPSED_TIME);
-    startTime = glutGet(GLUT_ELAPSED_TIME); // Define o tempo de início do jogo
+    startTime = glutGet(GLUT_ELAPSED_TIME);
     lastFedTime = glutGet(GLUT_ELAPSED_TIME);
 }
 
@@ -1112,5 +1204,6 @@ int main(int argc, char *argv[]){
 
     doFrame(0);
     glutMainLoop();
+    glDeleteTextures(1, &iceTexture);
     return 0;
 }
