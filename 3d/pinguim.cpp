@@ -78,8 +78,10 @@ int lastFedTime = 0;
 
 // Variáveis para textura
 GLuint iceTexture;
+GLuint fishTexture;  
 int textureWidth = 512, textureHeight = 512;
 unsigned char* textureData;
+
 
 // Define as direções para onde o pinguim pode estar "olhando"
 typedef enum {
@@ -224,6 +226,48 @@ void loadTexture() {
                  GL_RGB, GL_UNSIGNED_BYTE, textureData);
     
     free(textureData); // Libera a memória após carregar a textura
+}
+
+void loadFishTexture() {
+    // Tamanho da textura
+    int width = 512, height = 512;
+    unsigned char* textureData = (unsigned char*)malloc(width * height * 3);
+    
+    // Cria um padrão de escamas de peixe
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            int index = (y * width + x) * 3;
+            
+            // Cor base laranja
+            textureData[index] = 255;       // R
+            textureData[index+1] = 140 + rand() % 50;  // G
+            textureData[index+2] = 0 + rand() % 50;    // B
+            
+            // Padrão de escamas
+            if ((x/20 + y/20) % 2 == 0) {
+                textureData[index] = 255 - 30;
+                textureData[index+1] = 165 - 40;
+                textureData[index+2] = 0 + 20;
+            }
+            
+            // Adiciona algumas manchas escuras
+            if (rand() % 100 < 2) {
+                textureData[index] = 50;
+                textureData[index+1] = 50;
+                textureData[index+2] = 50;
+            }
+        }
+    }
+    
+    // Cria a textura OpenGL
+    glGenTextures(1, &fishTexture);
+    glBindTexture(GL_TEXTURE_2D, fishTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, 
+                 GL_RGB, GL_UNSIGNED_BYTE, textureData);
+    
+    free(textureData);
 }
 
 // Colisão mãe e buraco
@@ -671,18 +715,39 @@ void drawFishAtPosition(float x, float z, int direction) {
             glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
         }
 
-        glColor3f(1.0, 0.4, 0.0);
+        // Habilita textura para o corpo do peixe
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, fishTexture);
+        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+        
+        // Corpo principal com textura
+        glColor3f(1.0, 1.0, 1.0); // Cor branca para a textura aparecer corretamente
         glPushMatrix();
             glScalef(1.5, 0.8, 0.8);
-            drawSphere();
+            
+            // Usando GLU quadric para facilitar o mapeamento de textura
+            GLUquadricObj *quadric = gluNewQuadric();
+            gluQuadricTexture(quadric, GL_TRUE);
+            gluQuadricNormals(quadric, GLU_SMOOTH);
+            gluSphere(quadric, 0.5, 20, 20);
+            gluDeleteQuadric(quadric);
         glPopMatrix();
         
+        // Parte traseira do peixe
         glPushMatrix();
             glTranslatef(-0.5, 0.0, 0.0);
             glScalef(1.0, 0.6, 0.6);
-            drawSphere();
+            
+            quadric = gluNewQuadric();
+            gluQuadricTexture(quadric, GL_TRUE);
+            gluQuadricNormals(quadric, GLU_SMOOTH);
+            gluSphere(quadric, 0.5, 20, 20);
+            gluDeleteQuadric(quadric);
         glPopMatrix();
+        
+        glDisable(GL_TEXTURE_2D); // Desabilita textura para outras partes
 
+        // Cauda do peixe
         glColor3f(1.0, 0.3, 0.0);
         glPushMatrix();
             glTranslatef(-1.0, 0.0, 0.0);
@@ -699,6 +764,7 @@ void drawFishAtPosition(float x, float z, int direction) {
             glPopMatrix();
         glPopMatrix();
 
+        // Barbatanas dorsais
         glColor3f(1.0, 0.3, 0.0);
         glPushMatrix();
             glTranslatef(0.0, 0.35, 0.0);
@@ -713,6 +779,7 @@ void drawFishAtPosition(float x, float z, int direction) {
             drawPyramid(1.0, 1.0);
         glPopMatrix();
 
+        // Barbatanas laterais
         glColor3f(1.0, 0.3, 0.0);
         glPushMatrix();
             glTranslatef(0.3, 0.0, 0.45);
@@ -727,6 +794,7 @@ void drawFishAtPosition(float x, float z, int direction) {
             drawSphere();
         glPopMatrix();
 
+        // Olhos
         glColor3f(0.0, 0.0, 0.0);
         glPushMatrix();
             glTranslatef(0.5, 0.1, 0.3);
@@ -739,6 +807,7 @@ void drawFishAtPosition(float x, float z, int direction) {
             drawSphere();
         glPopMatrix();
 
+        // Boca
         glColor3f(0.8, 0.2, 0.0);
         glPushMatrix();
             glTranslatef(0.75, 0.0, 0.0);
@@ -747,7 +816,6 @@ void drawFishAtPosition(float x, float z, int direction) {
         glPopMatrix();
     glPopMatrix();
 }
-
 
 // Posiciona pinguim mãe
 void drawPenguimMother(){
@@ -1167,8 +1235,8 @@ void initialize(void) {
     
     // Habilita texturas
     glEnable(GL_TEXTURE_2D);
-    loadTexture(); // Carrega a textura do gelo
-    
+    loadTexture(); // Textura do gelo
+    loadFishTexture(); // Textura do peixe
     angle = 50;
     
     cameraDistance = 20.0;
@@ -1205,5 +1273,6 @@ int main(int argc, char *argv[]){
     doFrame(0);
     glutMainLoop();
     glDeleteTextures(1, &iceTexture);
+    glDeleteTextures(1, &fishTexture);
     return 0;
 }
