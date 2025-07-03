@@ -79,6 +79,9 @@ int lastFedTime = 0;
 // Variáveis para textura
 GLuint iceTexture;
 GLuint fishTexture;  
+GLuint penguinBodyTexture;    
+GLuint penguinStomachTexture; 
+GLuint penguinBeakTexture;    
 int textureWidth = 512, textureHeight = 512;
 unsigned char* textureData;
 
@@ -192,7 +195,89 @@ void endGame(int isVictory, const char* message) {
     exit(0);
 }
 
-// Função para carregar textura
+// Textura dos peixes
+void loadPenguinTextures() {
+    // Textura do corpo (preto com detalhes)
+    int width = 512, height = 512;
+    unsigned char* bodyData = (unsigned char*)malloc(width * height * 3);
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            int index = (y * width + x) * 3;
+            // Base preta com variações sutis
+            bodyData[index] = 10 + rand() % 20;
+            bodyData[index+1] = 10 + rand() % 20;
+            bodyData[index+2] = 10 + rand() % 20;
+            
+            // Padrão de penas
+            if ((x/30 + y/40) % 2 == 0) {
+                bodyData[index] += 20;
+                bodyData[index+1] += 20;
+                bodyData[index+2] += 20;
+            }
+        }
+    }
+    
+    glGenTextures(1, &penguinBodyTexture);
+    glBindTexture(GL_TEXTURE_2D, penguinBodyTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, bodyData);
+    free(bodyData);
+
+    // Textura da barriga (branca com detalhes)
+    unsigned char* stomachData = (unsigned char*)malloc(width * height * 3);
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            int index = (y * width + x) * 3;
+            // Base branca com variações sutis
+            stomachData[index] = 220 + rand() % 35;
+            stomachData[index+1] = 220 + rand() % 35;
+            stomachData[index+2] = 220 + rand() % 35;
+            
+            // Padrão de penas
+            if ((x/25 + y/35) % 3 == 0) {
+                stomachData[index] -= 20;
+                stomachData[index+1] -= 20;
+                stomachData[index+2] -= 20;
+            }
+        }
+    }
+    
+    glGenTextures(1, &penguinStomachTexture);
+    glBindTexture(GL_TEXTURE_2D, penguinStomachTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, stomachData);
+    free(stomachData);
+
+    // Textura do bico (laranja com detalhes)
+    unsigned char* beakData = (unsigned char*)malloc(width * height * 3);
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            int index = (y * width + x) * 3;
+            // Base laranja
+            beakData[index] = 240 + rand() % 15;
+            beakData[index+1] = 120 + rand() % 50;
+            beakData[index+2] = 40 + rand() % 30;
+            
+            // Detalhes mais escuros
+            if ((x/15 + y/20) % 2 == 0) {
+                beakData[index] -= 30;
+                beakData[index+1] -= 20;
+                beakData[index+2] -= 10;
+            }
+        }
+    }
+    
+    glGenTextures(1, &penguinBeakTexture);
+    glBindTexture(GL_TEXTURE_2D, penguinBeakTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, beakData);
+    free(beakData);
+}
+
+// Textura do gelo
 void loadTexture() {
     // Aloca memória para a textura (padrão de gelo azul claro)
     textureData = (unsigned char*)malloc(textureWidth * textureHeight * 3);
@@ -228,6 +313,7 @@ void loadTexture() {
     free(textureData); // Libera a memória após carregar a textura
 }
 
+// Textura do peixe
 void loadFishTexture() {
     // Tamanho da textura
     int width = 512, height = 512;
@@ -554,31 +640,64 @@ void drawCone(GLdouble baseRadius, GLdouble topRadius, GLdouble height, GLint sl
 
 // Desenha corpo dos pinguins
 void drawPenguimBody(){
-    glColor3f(0.0, 0.0, 0.0);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, penguinBodyTexture);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    
+    glColor3f(1.0, 1.0, 1.0); // Cor branca para a textura aparecer corretamente
     glPushMatrix();
         glScalef(1.0, 1.3, 1.0);
-        drawSphere();
+        
+        GLUquadricObj *quadric = gluNewQuadric();
+        gluQuadricTexture(quadric, GL_TRUE);
+        gluQuadricNormals(quadric, GLU_SMOOTH);
+        gluSphere(quadric, 0.5, 20, 20);
+        gluDeleteQuadric(quadric);
     glPopMatrix();
+    
+    glDisable(GL_TEXTURE_2D);
 }
 
 // Desenha estômago (branco)
 void drawPenguimStomach(){
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, penguinStomachTexture);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    
     glColor3f(1.0, 1.0, 1.0);
     glPushMatrix();
         glTranslatef(0.0, 0.0, 0.14);
         glScalef(0.8, 1.2, 0.8);
-        drawSphere();
+        
+        GLUquadricObj *quadric = gluNewQuadric();
+        gluQuadricTexture(quadric, GL_TRUE);
+        gluQuadricNormals(quadric, GLU_SMOOTH);
+        gluSphere(quadric, 0.5, 20, 20);
+        gluDeleteQuadric(quadric);
     glPopMatrix();
+    
+    glDisable(GL_TEXTURE_2D);
 }
 
 // Desenha bico
 void drawBeak(){
-    glColor3f(1.0, 0.6, 0.0);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, penguinBeakTexture);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    
+    glColor3f(1.0, 1.0, 1.0);
     glPushMatrix();
         glTranslatef(0.0, 1.5, 0.30);
         glScalef(0.1, 0.15, 0.15);
-        drawCone(1.0, 0.0, 1.0, 20, 20);
+        
+        GLUquadricObj *quadric = gluNewQuadric();
+        gluQuadricTexture(quadric, GL_TRUE);
+        gluQuadricNormals(quadric, GLU_SMOOTH);
+        gluCylinder(quadric, 1.0, 0.0, 1.0, 20, 20);
+        gluDeleteQuadric(quadric);
     glPopMatrix();
+    
+    glDisable(GL_TEXTURE_2D);
 }
 
 // Desenha olhos
@@ -1237,6 +1356,7 @@ void initialize(void) {
     glEnable(GL_TEXTURE_2D);
     loadTexture(); // Textura do gelo
     loadFishTexture(); // Textura do peixe
+    loadPenguinTextures(); // Textura dos pinguins
     angle = 50;
     
     cameraDistance = 20.0;
@@ -1274,5 +1394,8 @@ int main(int argc, char *argv[]){
     glutMainLoop();
     glDeleteTextures(1, &iceTexture);
     glDeleteTextures(1, &fishTexture);
+    glDeleteTextures(1, &penguinBodyTexture);   
+    glDeleteTextures(1, &penguinStomachTexture);
+    glDeleteTextures(1, &penguinBeakTexture);
     return 0;
 }
