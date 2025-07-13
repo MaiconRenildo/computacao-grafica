@@ -729,7 +729,7 @@ void display() {
     glClear(GL_COLOR_BUFFER_BIT);
     reset_modelview_matrix();
     drawPicture();
-    cartesian_plane();
+    // cartesian_plane();
     glFlush();
 }
 ///////////////////////////////////////////////////////////////////
